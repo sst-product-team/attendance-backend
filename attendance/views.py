@@ -25,6 +25,7 @@ def index(request):
         curr_class = SubjectClass.get_current_class()
 
         print(f"Marked attendance of {student.name} for class {curr_class.name}")
+        ClassAttendance.objects.create(student = student, subject=curr_class).save()
         return JsonResponse({
             "class": curr_class.name,
             "time": curr_class.start_time

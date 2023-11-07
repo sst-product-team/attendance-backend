@@ -27,7 +27,7 @@ class SubjectClass(models.Model):
 
     @classmethod
     def get_current_class(cls):
-        return SubjectClass.objects.filter()[:1].get()
+        return SubjectClass.objects.filter().last()
 
 
 class ClassAttendance(models.Model):
@@ -66,6 +66,7 @@ class ClassAttendance(models.Model):
 
 
 class GeoLocation(models.Model):
+    label = models.SmallIntegerField(default=-1)
     token = models.CharField(max_length=100, blank=False, null=False)
     lat = models.CharField(max_length=50)
     lon = models.CharField(max_length=50)

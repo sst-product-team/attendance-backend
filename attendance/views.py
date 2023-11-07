@@ -10,6 +10,9 @@ AVG_LON = 77.66468718
 def is_in_class(lat, lon):
     return abs(AVG_LAT - lat) < 0.0001 and abs(AVG_LON - lon) < 0.0001
 
+def ping(request):
+    return JsonResponse({"message": "pong"})
+
 @csrf_exempt
 def index(request):
     data = json.loads(request.body)

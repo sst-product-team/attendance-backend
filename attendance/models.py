@@ -9,6 +9,9 @@ class Student(models.Model):
     token = models.CharField(max_length=100, blank=False, null=False, unique=True)
     # mail = models.DateTimeField("date published")
 
+    def __str__(self):
+        return self.mail
+
     @classmethod
     def get_object_with_token(cls, token):
         return Student.objects.filter(token=token)[:1].get()
@@ -19,6 +22,9 @@ class SubjectClass(models.Model):
     start_time = models.DateTimeField()
     end_time = models.DateTimeField(blank=True, null=True)
 
+    def __str__(self):
+        return f"{self.name} {self.start_time}"
+
     @classmethod
     def get_current_class(cls):
         return SubjectClass.objects.filter()[:1].get()
@@ -28,6 +34,9 @@ class ClassAttendance(models.Model):
     creation_time = models.DateTimeField(auto_now=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     subject = models.ForeignKey(SubjectClass, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.student.mail + " " + self.subject.name
 
     @classmethod
     def get_latest_attendance_time(cls, student, subject):

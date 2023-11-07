@@ -1,39 +1,54 @@
 from django.http import HttpResponse, JsonResponse
-from attendance.models import SubjectClass, Student, ClassAttendance
+from attendance.models import SubjectClass, Student, ClassAttendance, GeoLocation
 from django.views.decorators.csrf import csrf_exempt
 import json
 
 
+AVG_LAT = 12.83849392
+AVG_LON = 77.66468718
+
+def is_in_class(lat, lon):
+    return abs(AVG_LAT - lat) < 0.0001 and abs(AVG_LON - lon) < 0.0001
+
 @csrf_exempt
 def index(request):
     data = json.loads(request.body)
-    location = data["location"]
+    lat = str(data['latitutde'])
+    lon = str(data['longitude'])
     token = data["token"]
 
-    student = Student.objects.filter(token=token)[:1].get()
-    curr_class = SubjectClass.get_current_class()
+    if is_in_class(lat, lon):
+        student = Student.objects.filter(token=token)[:1].get()
+        curr_class = SubjectClass.get_current_class()
 
-    print(f"Marked attendance of {student.name} for class {curr_class.name}")
-    return JsonResponse(f"Marked attendance of {student.name} for class {curr_class.name}")
-
-@csrf_exempt
-def getattendance(request):
-    data = json.loads(request.body)
-    token = data['token']
-
-    student = Student.objects.get(token = token)
-    all_attendances = ClassAttendance.objects.filter(student=student)
-
-    attendance_response = []
-
-    for attendance in all_attendances:
-        attendance_response.append({
-            "mail": attendance.student.mail,
-            "subject": attendance.subject.name,
-            "classStartTime": attendance.subject.start_time
+        print(f"Marked attendance of {student.name} for class {curr_class.name}")
+        return JsonResponse({
+            "class": curr_class.name,
+            "time": curr_class.start_time
         })
+    else:
+        return JsonResponse({
+            "message": "You are outside the class range"
+        }, status=500)
 
-    return JsonResponse(attendance_response, safe=False)
+# @csrf_exempt
+# def getattendance(request):
+#     data = json.loads(request.body)
+#     token = data['token']
+
+#     student = Student.objects.get(token = token)
+#     all_attendances = ClassAttendance.objects.filter(student=student)
+
+#     attendance_response = []
+
+#     for attendance in all_attendances:
+#         attendance_response.append({
+#             "mail": attendance.student.mail,
+#             "subject": attendance.subject.name,
+#             "classStartTime": attendance.subject.start_time
+#         })
+
+#     return JsonResponse(attendance_response, safe=False)
 
 @csrf_exempt
 def register(request):
@@ -55,9 +70,67 @@ def register(request):
         if user_obj.token == details['token']:
             return JsonResponse({})
         else:
+            # TODO: add to database and report to bsm
             return JsonResponse({"message": "if you are bad I am your dad"}, status=400)
     else:
         student = Student.objects.create(name="", mail=details['mail'], token=details['token'])
         student.save()
+
+    return JsonResponse(details)
+
+
+@csrf_exempt
+def geo(request):
+    # check if request.body.token
+    print(request.body)
+    data = json.loads(request.body)
+    token = data['uid']
+    lat = str(data['latitutde'])
+    lon = str(data['longitude'])
+
+    obj = GeoLocation.objects.create(token = token, lat=lat, lon=lon)
+    obj.save()
+    return JsonResponse({})
+
+
+@csrf_exempt
+def get_all_attendance(request):
+    data = json.loads(request.body)
+    token = data['token']
+
+    student = Student.get_object_with_token(token)
+    all_attendances_obj = ClassAttendance.all_subject_attendance(student)
+
+    all_attendances = []
+    for subject_class in all_attendances_obj:
+        details = {}
+        details["name"] = subject_class['name']
+        details["start_time"] = subject_class['start_time']
+        details["end_time"] = subject_class['end_time']
+        details["present_time"] = subject_class['min_creation_time']
+        # print(f"Subject: {name}, Start Time: {start_time}, End Time: {end_time}, Min Creation Time: {min_creation_time}")
+        all_attendances.append(details)
+
+    return JsonResponse(all_attendances, safe=False)
+
+
+@csrf_exempt
+def getcurclassattendance(request):
+    data = json.loads(request.body)
+    token = data['token']
+
+    curr_class = SubjectClass.get_current_class()
+    if curr_class == None:
+        return JsonResponse({}, status=404)
+    
+    details = {}
+    details["name"] = curr_class.name
+    details["start_time"] = curr_class.start_time
+    details["end_time"] = curr_class.end_time
+
+    student = Student.get_object_with_token(token)
+    time = ClassAttendance.get_latest_attendance_time(student, curr_class)
+
+    details["present_time"] = time
 
     return JsonResponse(details)

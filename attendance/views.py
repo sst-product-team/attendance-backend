@@ -8,6 +8,7 @@ AVG_LAT = 12.83849392
 AVG_LON = 77.66468718
 
 def is_in_class(lat, lon):
+    # return True
     return abs(AVG_LAT - lat) < 0.0001 and abs(AVG_LON - lon) < 0.0001
 
 def ping(request):
@@ -16,13 +17,20 @@ def ping(request):
 @csrf_exempt
 def index(request):
     data = json.loads(request.body)
-    lat = str(data['latitutde'])
-    lon = str(data['longitude'])
+    lat = (data['latitutde'])
+    lon = (data['longitude'])
     token = data["token"]
 
     if is_in_class(lat, lon):
         student = Student.objects.filter(token=token)[:1].get()
         curr_class = SubjectClass.get_current_class()
+
+        if ClassAttendance.objects.filter(student = student, subject=curr_class).exists():
+            print(f"Attendance already marked of {student.name} for class {curr_class.name}")
+            return JsonResponse({
+                "class": curr_class.name,
+                "time": curr_class.start_time
+            })
 
         print(f"Marked attendance of {student.name} for class {curr_class.name}")
         ClassAttendance.objects.create(student = student, subject=curr_class).save()
@@ -33,7 +41,7 @@ def index(request):
     else:
         return JsonResponse({
             "message": "You are outside the class range"
-        }, status=500)
+        }, status=400)
 
 # @csrf_exempt
 # def getattendance(request):

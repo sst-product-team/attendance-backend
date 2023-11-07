@@ -25,7 +25,7 @@ class SubjectClass(models.Model):
 
 
 class ClassAttendance(models.Model):
-    creation_time = models.DateTimeField(auto_created=True)
+    creation_time = models.DateTimeField(auto_now=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     subject = models.ForeignKey(SubjectClass, on_delete=models.CASCADE)
 

@@ -1,7 +1,8 @@
 asgiref==3.7.2
 backports.zoneinfo==0.2.1
+dj-database-url==1.2.0
 Django==4.2.7
+gunicorn==19.7.1
 psycopg2==2.9.9
 sqlparse==0.4.4
 typing_extensions==4.8.0
-gunicorn==19.7.1

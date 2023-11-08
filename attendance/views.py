@@ -17,6 +17,7 @@ def ping(request):
 @csrf_exempt
 def index(request):
     data = json.loads(request.body)
+    print(data)
     lat = (data['latitutde'])
     lon = (data['longitude'])
     token = data["token"]
@@ -26,7 +27,7 @@ def index(request):
         student = Student.objects.filter(token=token)[:1].get()
         curr_class = SubjectClass.get_current_class()
 
-        if curr_class == None or curr_class.is_active():
+        if curr_class == None or not curr_class.is_active():
             return JsonResponse({
                 "message": "No active class for now"
             }, status=400)

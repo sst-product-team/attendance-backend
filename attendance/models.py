@@ -66,7 +66,8 @@ class ClassAttendance(models.Model):
 
 
 class GeoLocation(models.Model):
-    label = models.SmallIntegerField(default=-1)
+    label = models.SmallIntegerField(default=-2)
     token = models.CharField(max_length=100, blank=False, null=False)
     lat = models.CharField(max_length=50)
     lon = models.CharField(max_length=50)
+    accuracy = models.CharField(max_length=50, default="")

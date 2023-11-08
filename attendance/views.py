@@ -75,13 +75,15 @@ def register(request):
 @csrf_exempt
 def geo(request):
     # check if request.body.token
-    print(request.body)
+    # print(request.body)
     data = json.loads(request.body)
     token = data['uid']
     lat = str(data['latitutde'])
     lon = str(data['longitude'])
+    accuracy = str(data['accuracy'])
+    label = int(data['label'])
 
-    obj = GeoLocation.objects.create(token = token, lat=lat, lon=lon)
+    obj = GeoLocation.objects.create(label=label, token = token, lat=lat, lon=lon, accuracy=accuracy)
     obj.save()
     return JsonResponse({})
 

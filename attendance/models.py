@@ -3,6 +3,11 @@ from django.db.models import Min
 from django.db.models import F
 from django.utils import timezone
 
+
+def round_coordinates(num):
+    X = 1e10
+    return int(num*X)/X
+
 # Create your models here.
 class Student(models.Model):
     name = models.CharField(max_length=50)
@@ -28,7 +33,12 @@ class SubjectClass(models.Model):
 
     @classmethod
     def get_current_class(cls):
-        return SubjectClass.objects.filter().last()
+        current_time = timezone.now()
+        filtered_subject_class = SubjectClass.objects.filter(start_time__lte=current_time, end_time__gte=current_time).first()
+        if filtered_subject_class:
+            return filtered_subject_class
+        else:
+            return None
     
     def is_active(self):
         current_time = timezone.now()
@@ -69,8 +79,16 @@ class ClassAttendance(models.Model):
     #     return ClassAttendance.objects.filter(student=student).values("subject").annotate(min_creation_time=Min('creation_time')).all()
 
 class ClassAttendanceWithGeoLocation(models.Model):
-    lat = models.CharField(max_length=15)
-    lon = models.CharField(max_length=15)
+    lat = models.DecimalField(max_digits=13,decimal_places=10)
+    lon = models.DecimalField(max_digits=13,decimal_places=10)
+    accuracy = models.DecimalField(max_digits=13,decimal_places=10)
+
+    def save(self, *args, **kwargs):
+        self.lat = round_coordinates(self.lat)
+        self.lon = round_coordinates(self.lon)
+        self.accuracy = round_coordinates(self.accuracy)
+        
+        super().save(*args, **kwargs)
 
     class_attendance = models.ForeignKey(ClassAttendance, on_delete=models.CASCADE)
 
@@ -85,13 +103,28 @@ class ClassAttendanceWithGeoLocation(models.Model):
 class GeoLocation(models.Model):
     label = models.SmallIntegerField(default=-2)
     token = models.CharField(max_length=100, blank=False, null=False)
-    lat = models.CharField(max_length=15)
-    lon = models.CharField(max_length=15)
-    accuracy = models.CharField(max_length=15, default="")
+    lat = models.DecimalField(max_digits=13,decimal_places=10)
+    lon = models.DecimalField(max_digits=13,decimal_places=10)
+    accuracy = models.DecimalField(max_digits=13,decimal_places=10)
+    
+    def save(self, *args, **kwargs):
+        self.lat = round_coordinates(self.lat)
+        self.lon = round_coordinates(self.lon)
+        self.accuracy = round_coordinates(self.accuracy)
+        
+        super().save(*args, **kwargs)
 
 
-class FalseAttempts(models.Model):
+class FalseAttempt(models.Model):
     token = models.CharField(max_length=100, blank=False, null=False)
-    lat = models.CharField(max_length=15)
-    lon = models.CharField(max_length=15)
-    accuracy = models.CharField(max_length=15, default="")
+    lat = models.DecimalField(max_digits=13,decimal_places=10)
+    lon = models.DecimalField(max_digits=13,decimal_places=10)
+    accuracy = models.DecimalField(max_digits=13,decimal_places=10)
+
+    def save(self, *args, **kwargs):
+        self.lat = round_coordinates(self.lat)
+        self.lon = round_coordinates(self.lon)
+        self.accuracy = round_coordinates(self.accuracy)
+        
+        super().save(*args, **kwargs)
+

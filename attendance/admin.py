@@ -1,5 +1,5 @@
 from django.contrib import admin
-from attendance.models import Student, SubjectClass, ClassAttendance, GeoLocation, ClassAttendanceWithGeoLocation, FalseAttempts
+from attendance.models import Student, SubjectClass, ClassAttendance, GeoLocation, ClassAttendanceWithGeoLocation, FalseAttempt
 
 # Register your models here.
 
@@ -8,4 +8,4 @@ admin.site.register(SubjectClass)
 admin.site.register(ClassAttendance)
 admin.site.register(GeoLocation)
 admin.site.register(ClassAttendanceWithGeoLocation)
-admin.site.register(FalseAttempts)
+admin.site.register(FalseAttempt)

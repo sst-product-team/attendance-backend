@@ -61,6 +61,8 @@ def register(request):
         return JsonResponse({"message": "mail should end with @sst.scaler.com"}, status=400)
     
     details['token'] = data["uid"]
+    details['name'] = data["name"] if 'name' in data else ""
+    
 
     print(details)
 
@@ -73,7 +75,7 @@ def register(request):
             # TODO: add to database and report to bsm
             return JsonResponse({"message": "you can loggin in only one device"}, status=400)
     else:
-        student = Student.objects.create(name="", mail=details['mail'], token=details['token'])
+        student = Student.objects.create(name=details['name'], mail=details['mail'], token=details['token'])
         student.save()
 
     return JsonResponse(details)

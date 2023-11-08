@@ -15,8 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
+
+def replyPing(request):
+    return JsonResponse({"message":"pong"})
 
 urlpatterns = [
+    path('ping/', replyPing, name="ping"),
     path("attendance/", include("attendance.urls")),
     path('admin/', admin.site.urls),
 ]

@@ -43,25 +43,6 @@ def index(request):
             "message": "You are outside the class range"
         }, status=400)
 
-# @csrf_exempt
-# def getattendance(request):
-#     data = json.loads(request.body)
-#     token = data['token']
-
-#     student = Student.objects.get(token = token)
-#     all_attendances = ClassAttendance.objects.filter(student=student)
-
-#     attendance_response = []
-
-#     for attendance in all_attendances:
-#         attendance_response.append({
-#             "mail": attendance.student.mail,
-#             "subject": attendance.subject.name,
-#             "classStartTime": attendance.subject.start_time
-#         })
-
-#     return JsonResponse(attendance_response, safe=False)
-
 @csrf_exempt
 def register(request):
     details = {}
@@ -69,7 +50,7 @@ def register(request):
     data = json.loads(request.body)
 
     details['mail'] = data["email"]
-    if not details['mail'].endswith("@sst.scaler.com"):
+    if not (details['mail'].endswith("@sst.scaler.com") or details['mail'].endswith("@scaler.com")):
         return JsonResponse({"message": "mail should end with @sst.scaler.com"}, status=400)
     
     details['token'] = data["uid"]

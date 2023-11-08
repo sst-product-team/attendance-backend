@@ -25,7 +25,7 @@ def index(request):
         student = Student.objects.filter(token=token)[:1].get()
         curr_class = SubjectClass.get_current_class()
 
-        if curr_class == None:
+        if curr_class == None or curr_class.is_active():
             return JsonResponse({
                 "message": "No active class for now"
             }, status=400)

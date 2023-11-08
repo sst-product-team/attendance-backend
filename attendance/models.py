@@ -1,6 +1,7 @@
 from django.db import models
 from django.db.models import Min
 from django.db.models import F
+from django.utils import timezone
 
 # Create your models here.
 class Student(models.Model):
@@ -28,7 +29,10 @@ class SubjectClass(models.Model):
     @classmethod
     def get_current_class(cls):
         return SubjectClass.objects.filter().last()
-
+    
+    def is_active(self):
+        current_time = timezone.now()
+        return self.start_time <= current_time <= (self.end_time if self.end_time else current_time)
 
 class ClassAttendance(models.Model):
     creation_time = models.DateTimeField(auto_now=True)

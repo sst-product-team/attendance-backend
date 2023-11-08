@@ -1,5 +1,5 @@
 from django.http import HttpResponse, JsonResponse
-from attendance.models import SubjectClass, Student, ClassAttendance, GeoLocation
+from attendance.models import SubjectClass, Student, ClassAttendance, GeoLocation, ClassAttendanceWithGeoLocation
 from django.views.decorators.csrf import csrf_exempt
 import json
 
@@ -25,15 +25,19 @@ def index(request):
         student = Student.objects.filter(token=token)[:1].get()
         curr_class = SubjectClass.get_current_class()
 
+        if curr_class == None:
+            return JsonResponse({
+                "message": "No active class for now"
+            }, status=400)
+
         if ClassAttendance.objects.filter(student = student, subject=curr_class).exists():
-            print(f"Attendance already marked of {student.name} for class {curr_class.name}")
+            # print(f"Attendance already marked of {student.name} for class {curr_class.name}")
             return JsonResponse({
                 "class": curr_class.name,
                 "time": curr_class.start_time
             })
 
-        print(f"Marked attendance of {student.name} for class {curr_class.name}")
-        ClassAttendance.objects.create(student = student, subject=curr_class).save()
+        ClassAttendanceWithGeoLocation.create_with(student, curr_class, str(lat), str(lon))
         return JsonResponse({
             "class": curr_class.name,
             "time": curr_class.start_time

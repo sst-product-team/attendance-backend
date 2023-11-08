@@ -64,10 +64,23 @@ class ClassAttendance(models.Model):
     # def get_all_student_attendance(cls, student):
     #     return ClassAttendance.objects.filter(student=student).values("subject").annotate(min_creation_time=Min('creation_time')).all()
 
+class ClassAttendanceWithGeoLocation(models.Model):
+    lat = models.CharField(max_length=15)
+    lon = models.CharField(max_length=15)
+
+    class_attendance = models.ForeignKey(ClassAttendance, on_delete=models.CASCADE)
+
+    @classmethod
+    def create_with(cls, student, subject, lat, lon):
+        class_attendance = ClassAttendance.objects.create(student=student, subject=subject)
+        class_attendance.save()
+        attendance = ClassAttendanceWithGeoLocation.objects.create(lat=lat, lon=lon, class_attendance=class_attendance)
+        attendance.save()
+        return attendance
 
 class GeoLocation(models.Model):
     label = models.SmallIntegerField(default=-2)
     token = models.CharField(max_length=100, blank=False, null=False)
-    lat = models.CharField(max_length=50)
-    lon = models.CharField(max_length=50)
-    accuracy = models.CharField(max_length=50, default="")
+    lat = models.CharField(max_length=15)
+    lon = models.CharField(max_length=15)
+    accuracy = models.CharField(max_length=15, default="")

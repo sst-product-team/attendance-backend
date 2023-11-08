@@ -64,7 +64,7 @@ def register(request):
             return JsonResponse({})
         else:
             # TODO: add to database and report to bsm
-            return JsonResponse({"message": "if you are bad I am your dad"}, status=400)
+            return JsonResponse({"message": "you can loggin in only one device"}, status=400)
     else:
         student = Student.objects.create(name="", mail=details['mail'], token=details['token'])
         student.save()

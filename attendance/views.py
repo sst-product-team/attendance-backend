@@ -1,5 +1,5 @@
 from django.http import HttpResponse, JsonResponse
-from attendance.models import SubjectClass, Student, ClassAttendance, GeoLocation, ClassAttendanceWithGeoLocation
+from attendance.models import SubjectClass, Student, ClassAttendance, GeoLocation, FalseAttempts, ClassAttendanceWithGeoLocation
 from django.views.decorators.csrf import csrf_exempt
 import json
 
@@ -20,6 +20,7 @@ def index(request):
     lat = (data['latitutde'])
     lon = (data['longitude'])
     token = data["token"]
+    accuracy = data['accuracy'] if "accuracy" in data else ""
 
     if is_in_class(lat, lon):
         student = Student.objects.filter(token=token)[:1].get()
@@ -43,6 +44,7 @@ def index(request):
             "time": curr_class.start_time
         })
     else:
+        FalseAttempts.objects.create(token=token, lat=lat, lon=lon, accuracy=accuracy).save()
         return JsonResponse({
             "message": "You are outside the class range"
         }, status=400)

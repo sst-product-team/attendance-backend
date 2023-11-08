@@ -88,3 +88,10 @@ class GeoLocation(models.Model):
     lat = models.CharField(max_length=15)
     lon = models.CharField(max_length=15)
     accuracy = models.CharField(max_length=15, default="")
+
+
+class FalseAttempts(models.Model):
+    token = models.CharField(max_length=100, blank=False, null=False)
+    lat = models.CharField(max_length=15)
+    lon = models.CharField(max_length=15)
+    accuracy = models.CharField(max_length=15, default="")

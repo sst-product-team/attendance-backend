@@ -21,10 +21,14 @@ def index(request):
     lat = (data['latitutde'])
     lon = (data['longitude'])
     token = data["token"]
+    if 'accuracy' not in data:
+        return JsonResponse({
+            "message": "Please update your app"
+        }, status=400)
     accuracy = data['accuracy']
 
+    student = Student.objects.get(token=token)
     if is_in_class(lat, lon):
-        student = Student.objects.filter(token=token)[:1].get()
         curr_class = SubjectClass.get_current_class()
 
         if curr_class == None or not curr_class.is_active():
@@ -39,13 +43,13 @@ def index(request):
                 "time": curr_class.start_time
             })
 
-        ClassAttendanceWithGeoLocation.create_with(student, curr_class, lat, lon, accuracy=accuracy)
+        ClassAttendanceWithGeoLocation.create_with(student, curr_class, lat, lon, accuracy)
         return JsonResponse({
             "class": curr_class.name,
             "time": curr_class.start_time
         })
     else:
-        FalseAttempt.objects.create(token=token, lat=lat, lon=lon, accuracy=accuracy).save()
+        FalseAttempt.objects.create(student=student, lat=lat, lon=lon, accuracy=accuracy).save()
         return JsonResponse({
             "message": "You are outside the class range"
         }, status=400)
@@ -91,7 +95,9 @@ def geo(request):
     accuracy = str(data['accuracy'])
     label = int(data['label'])
 
-    obj = GeoLocation.objects.create(label=label, token = token, lat=lat, lon=lon, accuracy=accuracy)
+    student = Student.objects.get(token=token)
+
+    obj = GeoLocation.objects.create(label=label, student = student, lat=lat, lon=lon, accuracy=accuracy)
     obj.save()
     return JsonResponse({})
 

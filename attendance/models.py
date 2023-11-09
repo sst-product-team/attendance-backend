@@ -46,8 +46,8 @@ class SubjectClass(models.Model):
 
 class ClassAttendance(models.Model):
     creation_time = models.DateTimeField(auto_now=True)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
-    subject = models.ForeignKey(SubjectClass, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, db_index=True)
+    subject = models.ForeignKey(SubjectClass, on_delete=models.CASCADE, db_index=True)
 
     def __str__(self):
         return self.student.mail + " " + self.subject.name
@@ -81,7 +81,7 @@ class ClassAttendance(models.Model):
 class ClassAttendanceWithGeoLocation(models.Model):
     STATUS_CHOICES = [
         ('proxy', 'Proxy'),
-        ('verifie', 'Verifie'),
+        ('verifie', 'Verified'),
         ('standby', 'Standby'),
     ]
 
@@ -93,8 +93,8 @@ class ClassAttendanceWithGeoLocation(models.Model):
         max_length=10,
         choices=STATUS_CHOICES,
         default='standby',  # Set the default value if needed
+        db_index=True
     )
-
 
     def save(self, *args, **kwargs):
         self.lat = round_coordinates(self.lat)
@@ -116,8 +116,7 @@ class ClassAttendanceWithGeoLocation(models.Model):
 
 class GeoLocation(models.Model):
     label = models.SmallIntegerField(default=-2)
-    token = models.CharField(max_length=100, blank=False, null=False)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, default=1)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
     lat = models.DecimalField(max_digits=13,decimal_places=10)
     lon = models.DecimalField(max_digits=13,decimal_places=10)
     accuracy = models.DecimalField(max_digits=13,decimal_places=10)
@@ -131,8 +130,7 @@ class GeoLocation(models.Model):
 
 
 class FalseAttempt(models.Model):
-    token = models.CharField(max_length=100, blank=False, null=False)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, default=1)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, db_index=True)
     lat = models.DecimalField(max_digits=13,decimal_places=10)
     lon = models.DecimalField(max_digits=13,decimal_places=10)
     accuracy = models.DecimalField(max_digits=13,decimal_places=10)

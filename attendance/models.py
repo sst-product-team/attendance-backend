@@ -26,7 +26,7 @@ class SubjectClass(models.Model):
     name = models.CharField(max_length=50)
     attendance_start_time = models.DateTimeField()
     attendance_end_time = models.DateTimeField(blank=True, null=True)
-    class_start_time = models.DateTimeField(blank=True, null=True)
+    class_start_time = models.DateTimeField(blank=True, null=True, db_index=True)
     class_end_time = models.DateTimeField(blank=True, null=True)
 
 
@@ -47,7 +47,7 @@ class SubjectClass(models.Model):
                 return None
 
     
-    def is_active(self):
+    def is_in_attendance_window(self):
         current_time = timezone.now()
         return self.attendance_start_time <= current_time <= (self.attendance_end_time if self.attendance_end_time else current_time)
 

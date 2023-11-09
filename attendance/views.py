@@ -31,7 +31,7 @@ def index(request):
     if is_in_class(lat, lon, accuracy):
         curr_class = SubjectClass.get_current_class()
 
-        if curr_class == None or not curr_class.is_active():
+        if curr_class == None or not curr_class.is_in_attendance_window():
             return JsonResponse({
                 "message": "No class active for attendance"
             }, status=400)

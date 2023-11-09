@@ -40,7 +40,12 @@ class SubjectClass(models.Model):
         if filtered_subject_class:
             return filtered_subject_class
         else:
-            return None
+            nearest_next_class = SubjectClass.objects.filter(class_start_time__gt=current_time).order_by('class_start_time').first()
+            if nearest_next_class:
+                return nearest_next_class
+            else:
+                return None
+
     
     def is_active(self):
         current_time = timezone.now()

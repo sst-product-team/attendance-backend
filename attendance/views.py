@@ -33,7 +33,7 @@ def index(request):
 
         if curr_class == None or not curr_class.is_active():
             return JsonResponse({
-                "message": "No active class for now"
+                "message": "No class active for attendance"
             }, status=400)
 
         if ClassAttendance.objects.filter(student = student, subject=curr_class).exists():
@@ -130,7 +130,7 @@ def getcurclassattendance(request):
 
     curr_class = SubjectClass.get_current_class()
     if curr_class == None:
-        return JsonResponse(None)
+        return JsonResponse({})
     
     details = {}
     details["name"] = curr_class.name

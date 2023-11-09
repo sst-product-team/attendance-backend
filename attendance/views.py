@@ -68,14 +68,15 @@ def register(request):
     if user_object_query.exists():
         user_obj = user_object_query[:1].get()
         if user_obj.token == details['token']:
-            return JsonResponse({})
+            details["status"] = "success"
+            return JsonResponse(details)
         else:
             # TODO: add to database and report to bsm
-            return JsonResponse({"message": "you can loggin in only one device"}, status=400)
+            return JsonResponse({"message": "you can loggin in only one device", "status": "error"}, status=400)
     else:
         student = Student.objects.create(name=details['name'], mail=details['mail'], token=details['token'])
         student.save()
-
+    details["status"] = "success"
     return JsonResponse(details)
 
 

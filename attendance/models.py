@@ -82,6 +82,7 @@ class ClassAttendanceWithGeoLocation(models.Model):
     lat = models.DecimalField(max_digits=13,decimal_places=10)
     lon = models.DecimalField(max_digits=13,decimal_places=10)
     accuracy = models.DecimalField(max_digits=13,decimal_places=10)
+    class_attendance = models.ForeignKey(ClassAttendance, on_delete=models.CASCADE)
 
     def save(self, *args, **kwargs):
         self.lat = round_coordinates(self.lat)
@@ -90,13 +91,12 @@ class ClassAttendanceWithGeoLocation(models.Model):
         
         super().save(*args, **kwargs)
 
-    class_attendance = models.ForeignKey(ClassAttendance, on_delete=models.CASCADE)
 
     @classmethod
-    def create_with(cls, student, subject, lat, lon):
+    def create_with(cls, student, subject, lat, lon, accuracy):
         class_attendance = ClassAttendance.objects.create(student=student, subject=subject)
         class_attendance.save()
-        attendance = ClassAttendanceWithGeoLocation.objects.create(lat=lat, lon=lon, class_attendance=class_attendance)
+        attendance = ClassAttendanceWithGeoLocation.objects.create(lat=lat, lon=lon, class_attendance=class_attendance, accuracy=accuracy)
         attendance.save()
         return attendance
 

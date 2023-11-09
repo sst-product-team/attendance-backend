@@ -5,7 +5,7 @@ from django.utils import timezone
 
 
 def round_coordinates(num):
-    X = 1e10
+    X = int(1e10)
     return int(num*X)/X
 
 # Create your models here.
@@ -103,6 +103,7 @@ class ClassAttendanceWithGeoLocation(models.Model):
 class GeoLocation(models.Model):
     label = models.SmallIntegerField(default=-2)
     token = models.CharField(max_length=100, blank=False, null=False)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, default=1)
     lat = models.DecimalField(max_digits=13,decimal_places=10)
     lon = models.DecimalField(max_digits=13,decimal_places=10)
     accuracy = models.DecimalField(max_digits=13,decimal_places=10)
@@ -117,6 +118,7 @@ class GeoLocation(models.Model):
 
 class FalseAttempt(models.Model):
     token = models.CharField(max_length=100, blank=False, null=False)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, default=1)
     lat = models.DecimalField(max_digits=13,decimal_places=10)
     lon = models.DecimalField(max_digits=13,decimal_places=10)
     accuracy = models.DecimalField(max_digits=13,decimal_places=10)

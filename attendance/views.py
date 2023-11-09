@@ -55,6 +55,7 @@ def register(request):
     details = {}
     
     data = json.loads(request.body)
+    print(data)
 
     details['mail'] = data["email"]
     if not (details['mail'].endswith("@sst.scaler.com") or details['mail'].endswith("@scaler.com")):
@@ -63,9 +64,6 @@ def register(request):
     details['token'] = data["uid"]
     details['name'] = data["name"] if 'name' in data else ""
     
-
-    print(details)
-
     user_object_query = Student.objects.filter(mail=details['mail'])
     if user_object_query.exists():
         user_obj = user_object_query[:1].get()

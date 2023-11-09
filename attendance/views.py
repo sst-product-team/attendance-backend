@@ -39,7 +39,7 @@ def index(request):
                 "time": curr_class.start_time
             })
 
-        ClassAttendanceWithGeoLocation.create_with(student, curr_class, str(lat), str(lon))
+        ClassAttendanceWithGeoLocation.create_with(student, curr_class, lat, lon)
         return JsonResponse({
             "class": curr_class.name,
             "time": curr_class.start_time

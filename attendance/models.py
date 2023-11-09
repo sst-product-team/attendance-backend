@@ -5,8 +5,7 @@ from django.utils import timezone
 
 
 def round_coordinates(num):
-    X = int(1e10)
-    return int(num*X)/X
+    return round(num, 10)
 
 # Create your models here.
 class Student(models.Model):
@@ -20,21 +19,24 @@ class Student(models.Model):
 
     @classmethod
     def get_object_with_token(cls, token):
-        return Student.objects.filter(token=token)[:1].get()
+        return Student.objects.get(token=token)
 
 
 class SubjectClass(models.Model):
     name = models.CharField(max_length=50)
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField(blank=True, null=True)
+    attendance_start_time = models.DateTimeField()
+    attendance_end_time = models.DateTimeField(blank=True, null=True)
+    class_start_time = models.DateTimeField(blank=True, null=True)
+    class_end_time = models.DateTimeField(blank=True, null=True)
+
 
     def __str__(self):
-        return f"{self.name} {self.start_time}"
+        return f"{self.name} {self.class_start_time}"
 
     @classmethod
     def get_current_class(cls):
         current_time = timezone.now()
-        filtered_subject_class = SubjectClass.objects.filter(start_time__lte=current_time, end_time__gte=current_time).first()
+        filtered_subject_class = SubjectClass.objects.filter(class_start_time__lte=current_time, class_end_time__gte=current_time).first()
         if filtered_subject_class:
             return filtered_subject_class
         else:
@@ -42,7 +44,7 @@ class SubjectClass(models.Model):
     
     def is_active(self):
         current_time = timezone.now()
-        return self.start_time <= current_time <= (self.end_time if self.end_time else current_time)
+        return self.attendance_start_time <= current_time <= (self.attendance_end_time if self.attendance_end_time else current_time)
 
 class ClassAttendance(models.Model):
     creation_time = models.DateTimeField(auto_now=True)
@@ -81,8 +83,9 @@ class ClassAttendance(models.Model):
 class ClassAttendanceWithGeoLocation(models.Model):
     STATUS_CHOICES = [
         ('proxy', 'Proxy'),
-        ('verifie', 'Verified'),
+        ('verified', 'Verified'),
         ('standby', 'Standby'),
+        ('flaggers', 'Flaggers'),
     ]
 
     lat = models.DecimalField(max_digits=13,decimal_places=10)
@@ -142,3 +145,5 @@ class FalseAttempt(models.Model):
         
         super().save(*args, **kwargs)
 
+    def __str__(self):
+        return str(self.student.mail)

@@ -7,9 +7,9 @@ import json
 AVG_LAT = 12.83849392
 AVG_LON = 77.66468718
 
-def is_in_class(lat, lon):
+def is_in_class(lat, lon, accuracy):
     # return True
-    return abs(AVG_LAT - lat) < 0.0001 and abs(AVG_LON - lon) < 0.0001
+    return accuracy >= 10 and abs(AVG_LAT - lat) < 0.0001 and abs(AVG_LON - lon) < 0.0001
 
 def ping(request):
     return JsonResponse({"message": "pong"})
@@ -28,7 +28,7 @@ def index(request):
     accuracy = data['accuracy']
 
     student = Student.objects.get(token=token)
-    if is_in_class(lat, lon):
+    if is_in_class(lat, lon, accuracy):
         curr_class = SubjectClass.get_current_class()
 
         if curr_class == None or not curr_class.is_active():
@@ -40,13 +40,13 @@ def index(request):
             # print(f"Attendance already marked of {student.name} for class {curr_class.name}")
             return JsonResponse({
                 "class": curr_class.name,
-                "time": curr_class.start_time
+                "time": curr_class.attendance_start_time
             })
 
         ClassAttendanceWithGeoLocation.create_with(student, curr_class, lat, lon, accuracy)
         return JsonResponse({
             "class": curr_class.name,
-            "time": curr_class.start_time
+            "time": curr_class.attendance_start_time
         })
     else:
         FalseAttempt.objects.create(student=student, lat=lat, lon=lon, accuracy=accuracy).save()
@@ -114,9 +114,9 @@ def get_all_attendance(request):
     for subject_class in all_attendances_obj:
         details = {}
         details["name"] = subject_class['name']
-        details["start_time"] = subject_class['start_time']
-        details["end_time"] = subject_class['end_time']
-        details["present_time"] = subject_class['min_creation_time']
+        details["class_start_time"] = subject_class['class_start_time']
+        details["class_end_time"] = subject_class['class_end_time']
+        details["attendance_time"] = subject_class['min_creation_time']
         # print(f"Subject: {name}, Start Time: {start_time}, End Time: {end_time}, Min Creation Time: {min_creation_time}")
         all_attendances.append(details)
 
@@ -130,16 +130,18 @@ def getcurclassattendance(request):
 
     curr_class = SubjectClass.get_current_class()
     if curr_class == None:
-        return JsonResponse({}, status=404)
+        return JsonResponse(None)
     
     details = {}
     details["name"] = curr_class.name
-    details["start_time"] = curr_class.start_time
-    details["end_time"] = curr_class.end_time
+    details["class_start_time"] = curr_class.class_start_time
+    details["class_end_time"] = curr_class.class_end_time
+    details["attendance_start_time"] = curr_class.attendance_start_time
+    details["attendance_end_time"] = curr_class.attendance_end_time
 
     student = Student.get_object_with_token(token)
     time = ClassAttendance.get_latest_attendance_time(student, curr_class)
 
-    details["present_time"] = time
+    details["attendance_time"] = time
 
     return JsonResponse(details)

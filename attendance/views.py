@@ -130,7 +130,7 @@ def getcurclassattendance(request):
 
     curr_class = SubjectClass.get_current_class()
     if curr_class == None:
-        return JsonResponse({})
+        return JsonResponse(None, safe=False)
     
     details = {}
     details["name"] = curr_class.name

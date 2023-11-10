@@ -37,7 +37,7 @@ def index(request):
             }, status=400)
         if not curr_class.is_in_attendance_window():
             return JsonResponse({
-                "message": "You can mark Attendance after " + curr_class.strftime("%I:%M %p")
+                "message": "You can mark Attendance between " + curr_class.attendance_start_time.strftime("%I:%M %p") + " to "+curr_class.attendance_end_time.strftime("%I:%M %p")
             }, status=400)
 
         if ClassAttendance.objects.filter(student = student, subject=curr_class).exists():

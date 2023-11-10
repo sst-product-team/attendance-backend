@@ -28,20 +28,17 @@ def index(request):
     accuracy = data['accuracy']
 
     student = Student.objects.get(token=token)
+    curr_class = SubjectClass.get_current_class()
+    if curr_class == None:
+        return JsonResponse({
+            "message": "No class active for attendance"
+        }, status=400)
+    if not curr_class.is_in_attendance_window():
+        return JsonResponse({
+            "message": "You can mark Attendance between " + curr_class.attendance_start_time.astimezone().strftime("%I:%M %p") + " to "+curr_class.attendance_end_time.astimezone().strftime("%I:%M %p")
+        }, status=400)
+    
     if is_in_class(lat, lon, accuracy):
-        curr_class = SubjectClass.get_current_class()
-
-        if curr_class == None:
-            return JsonResponse({
-                "message": "No class active for attendance"
-            }, status=400)
-        if not curr_class.is_in_attendance_window():
-            import datetime
-            d=datetime.timedelta(hours=5,minutes=30)
-            return JsonResponse({
-                "message": "You can mark Attendance between " + (curr_class.attendance_start_time+d).strftime("%I:%M %p") + " to "+(curr_class.attendance_end_time+d).strftime("%I:%M %p")
-            }, status=400)
-
         if ClassAttendance.objects.filter(student = student, subject=curr_class).exists():
             # print(f"Attendance already marked of {student.name} for class {curr_class.name}")
             return JsonResponse({

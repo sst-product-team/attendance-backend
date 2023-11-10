@@ -142,6 +142,8 @@ class FalseAttempt(models.Model):
     lat = models.DecimalField(max_digits=13,decimal_places=10)
     lon = models.DecimalField(max_digits=13,decimal_places=10)
     accuracy = models.DecimalField(max_digits=13,decimal_places=10)
+    creation_time = models.DateTimeField(auto_now=True, blank=True, null=True)
+    subject = models.ForeignKey(SubjectClass, on_delete=models.CASCADE, db_index=True, blank=True, null=True)
 
     def save(self, *args, **kwargs):
         self.lat = round_coordinates(self.lat)

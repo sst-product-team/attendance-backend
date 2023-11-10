@@ -55,7 +55,7 @@ def index(request):
             "time": curr_class.attendance_start_time
         })
     else:
-        FalseAttempt.objects.create(student=student, lat=lat, lon=lon, accuracy=accuracy).save()
+        FalseAttempt.objects.create(student=student, subject=curr_class, lat=lat, lon=lon, accuracy=accuracy).save()
         return JsonResponse({
             "message": "You are outside the class range"
         }, status=400)

@@ -14,9 +14,13 @@ class ClassAttendanceAdmin(admin.ModelAdmin):
     list_filter = ('subject', 'student')  # Add the fields you want to use as filters
 
 
+class FalseAttemptAdmin(admin.ModelAdmin):
+    list_filter = ('subject', 'student')  # Add the fields you want to use as filters
+
+
 admin.site.register(Student)
 admin.site.register(SubjectClass)
 admin.site.register(ClassAttendance, ClassAttendanceAdmin)
 admin.site.register(GeoLocation)
 admin.site.register(ClassAttendanceWithGeoLocation, ClassAttendanceWithGeoLocationAdmin)
-admin.site.register(FalseAttempt)
+admin.site.register(FalseAttempt, FalseAttemptAdmin)

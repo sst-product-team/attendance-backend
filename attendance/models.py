@@ -43,7 +43,7 @@ class SubjectClass(models.Model):
 
 
     def __str__(self):
-        return f"{self.name} {self.class_start_time}"
+        return f"{self.class_start_time.astimezone().strftime('%d/%m/%Y')} => {self.name}"
 
     @classmethod
     def get_current_class(cls):

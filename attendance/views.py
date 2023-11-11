@@ -1,5 +1,5 @@
 from django.http import HttpResponse, JsonResponse
-from attendance.models import SubjectClass, Student, ClassAttendance, GeoLocation, FalseAttempt, ClassAttendanceWithGeoLocation
+from attendance.models import SubjectClass, Student, ClassAttendance, GeoLocationDataContrib, FalseAttemptGeoLocation, ClassAttendanceWithGeoLocation
 from django.views.decorators.csrf import csrf_exempt
 import json
 
@@ -52,7 +52,7 @@ def index(request):
             "time": curr_class.attendance_start_time
         })
     else:
-        FalseAttempt.objects.create(student=student, subject=curr_class, lat=lat, lon=lon, accuracy=accuracy).save()
+        FalseAttemptGeoLocation.objects.create(student=student, subject=curr_class, lat=lat, lon=lon, accuracy=accuracy).save()
         return JsonResponse({
             "message": "You are outside the class range"
         }, status=400)
@@ -100,7 +100,7 @@ def geo(request):
 
     student = Student.objects.get(token=token)
 
-    obj = GeoLocation.objects.create(label=label, student = student, lat=lat, lon=lon, accuracy=accuracy)
+    obj = GeoLocationDataContrib.objects.create(label=label, student = student, lat=lat, lon=lon, accuracy=accuracy)
     obj.save()
     return JsonResponse({})
 

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from attendance.models import Student, SubjectClass, ClassAttendance, GeoLocation, ClassAttendanceWithGeoLocation, FalseAttempt
+from attendance.models import Student, SubjectClass, ClassAttendance, GeoLocationDataContrib, ClassAttendanceWithGeoLocation, FalseAttemptGeoLocation, ClassAttendanceByBSM
 
 # Register your models here.
 
@@ -18,9 +18,10 @@ class FalseAttemptAdmin(admin.ModelAdmin):
     list_filter = ('subject', 'student')  # Add the fields you want to use as filters
 
 
+admin.site.register(ClassAttendanceByBSM)
 admin.site.register(Student)
 admin.site.register(SubjectClass)
 admin.site.register(ClassAttendance, ClassAttendanceAdmin)
-admin.site.register(GeoLocation)
+admin.site.register(GeoLocationDataContrib)
 admin.site.register(ClassAttendanceWithGeoLocation, ClassAttendanceWithGeoLocationAdmin)
-admin.site.register(FalseAttempt, FalseAttemptAdmin)
+admin.site.register(FalseAttemptGeoLocation, FalseAttemptAdmin)

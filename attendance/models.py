@@ -2,10 +2,18 @@ from django.db import models
 from django.db.models import Min
 from django.db.models import F
 from django.utils import timezone
+from enum import Enum
 
 
 def round_coordinates(num):
     return round(num, 10)
+
+
+class AttendanceStatus(Enum):
+    Present = 1
+    Proxy = 2
+    Absent = 3
+
 
 # Create your models here.
 class Student(models.Model):
@@ -51,10 +59,15 @@ class SubjectClass(models.Model):
         current_time = timezone.now()
         return self.attendance_start_time <= current_time <= (self.attendance_end_time if self.attendance_end_time else current_time)
 
+
 class ClassAttendance(models.Model):
     creation_time = models.DateTimeField(auto_now=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, db_index=True)
     subject = models.ForeignKey(SubjectClass, on_delete=models.CASCADE, db_index=True)
+
+    class Meta:
+        # Make the combination of student and subject unique
+        unique_together = ('student', 'subject')
 
     def __str__(self):
         return self.student.mail + " " + self.subject.name
@@ -85,6 +98,31 @@ class ClassAttendance(models.Model):
     # def get_all_student_attendance(cls, student):
     #     return ClassAttendance.objects.filter(student=student).values("subject").annotate(min_creation_time=Min('creation_time')).all()
 
+    def get_attendance_by_bsm_status(self):
+        marked_by_bsm = self.classattendancebybsm_set.first()
+        if marked_by_bsm == None:
+            return None
+        return marked_by_bsm.get_attendance_status()
+    
+    def get_attendance_with_geo_location_status(self):
+        with_geo_location = self.classattendancewithgeolocation_set.first()
+        if with_geo_location == None:
+            return None
+        return with_geo_location.get_attendance_status()
+    
+    def get_attendance_status(self):
+
+        by_bsm = self.get_attendance_by_bsm_status()
+        if by_bsm != None:
+            return by_bsm
+        else:
+            with_geo_location = self.get_attendance_with_geo_location_status()
+            if with_geo_location != None:
+                return with_geo_location
+            else:
+                return AttendanceStatus.Absent
+
+
 class ClassAttendanceWithGeoLocation(models.Model):
     STATUS_CHOICES = [
         ('proxy', 'Proxy'),
@@ -96,13 +134,22 @@ class ClassAttendanceWithGeoLocation(models.Model):
     lat = models.DecimalField(max_digits=13,decimal_places=10)
     lon = models.DecimalField(max_digits=13,decimal_places=10)
     accuracy = models.DecimalField(max_digits=13,decimal_places=10)
-    class_attendance = models.ForeignKey(ClassAttendance, on_delete=models.CASCADE)
+    class_attendance = models.ForeignKey(ClassAttendance, on_delete=models.CASCADE, unique=True)
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
         default='standby',  # Set the default value if needed
         db_index=True
     )
+
+    def get_attendance_status(self):
+
+        status_mapping = {
+            'verified': AttendanceStatus.Present,
+            'standby': AttendanceStatus.Present,
+            'proxy': AttendanceStatus.Proxy,
+        }
+        return status_mapping.get(self.status)
 
     def save(self, *args, **kwargs):
         self.lat = round_coordinates(self.lat)
@@ -116,13 +163,38 @@ class ClassAttendanceWithGeoLocation(models.Model):
 
     @classmethod
     def create_with(cls, student, subject, lat, lon, accuracy):
-        class_attendance = ClassAttendance.objects.create(student=student, subject=subject)
+        class_attendance = ClassAttendance.objects.get_or_create(student=student, subject=subject)
         class_attendance.save()
         attendance = ClassAttendanceWithGeoLocation.objects.create(lat=lat, lon=lon, class_attendance=class_attendance, accuracy=accuracy)
         attendance.save()
         return attendance
 
-class GeoLocation(models.Model):
+
+class ClassAttendanceByBSM(models.Model):
+    STATUS_CHOICES = [
+        ('proxy', 'Proxy'),
+        ('present', 'Present'),
+        ('absent', 'Absent'),
+    ]
+    marked_by = models.ForeignKey(Student, on_delete=models.CASCADE)
+    class_attendance = models.ForeignKey(ClassAttendance, on_delete=models.CASCADE, unique=True)
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='present'
+    )
+
+    def get_attendance_status(self):
+        
+        status_mapping = {
+            'present': AttendanceStatus.Present,
+            'proxy': AttendanceStatus.Proxy,
+            'absent': AttendanceStatus.Absent,
+        }
+        return status_mapping.get(self.status)
+
+
+class GeoLocationDataContrib(models.Model):
     label = models.SmallIntegerField(default=-2)
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     lat = models.DecimalField(max_digits=13,decimal_places=10)
@@ -137,7 +209,7 @@ class GeoLocation(models.Model):
         super().save(*args, **kwargs)
 
 
-class FalseAttempt(models.Model):
+class FalseAttemptGeoLocation(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, db_index=True)
     lat = models.DecimalField(max_digits=13,decimal_places=10)
     lon = models.DecimalField(max_digits=13,decimal_places=10)
@@ -154,3 +226,4 @@ class FalseAttempt(models.Model):
 
     def __str__(self):
         return str(self.student.mail)
+

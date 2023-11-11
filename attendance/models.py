@@ -20,7 +20,11 @@ class Student(models.Model):
     name = models.CharField(max_length=50)
     mail = models.EmailField(max_length=80, blank=False, null=False, unique=True)
     token = models.CharField(max_length=100, blank=False, null=False, unique=True)
-    # mail = models.DateTimeField("date published")
+    
+    def get_id_number(self):
+        if self.mail.endswith('@scaler.com'):
+            return None
+        return self.mail.split('.')[1].split('@')[0]
 
     def __str__(self):
         return self.mail
@@ -99,13 +103,13 @@ class ClassAttendance(models.Model):
     #     return ClassAttendance.objects.filter(student=student).values("subject").annotate(min_creation_time=Min('creation_time')).all()
 
     def get_attendance_by_bsm_status(self):
-        marked_by_bsm = self.classattendancebybsm_set.first()
+        marked_by_bsm = ClassAttendanceByBSM.objects.filter(class_attendance=self).first()
         if marked_by_bsm == None:
             return None
         return marked_by_bsm.get_attendance_status()
     
     def get_attendance_with_geo_location_status(self):
-        with_geo_location = self.classattendancewithgeolocation_set.first()
+        with_geo_location = ClassAttendanceByBSM.objects.filter(class_attendance=self).first()
         if with_geo_location == None:
             return None
         return with_geo_location.get_attendance_status()
@@ -134,7 +138,7 @@ class ClassAttendanceWithGeoLocation(models.Model):
     lat = models.DecimalField(max_digits=13,decimal_places=10)
     lon = models.DecimalField(max_digits=13,decimal_places=10)
     accuracy = models.DecimalField(max_digits=13,decimal_places=10)
-    class_attendance = models.ForeignKey(ClassAttendance, on_delete=models.CASCADE, unique=True)
+    class_attendance = models.OneToOneField(ClassAttendance, on_delete=models.CASCADE)
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
@@ -177,7 +181,7 @@ class ClassAttendanceByBSM(models.Model):
         ('absent', 'Absent'),
     ]
     marked_by = models.ForeignKey(Student, on_delete=models.CASCADE)
-    class_attendance = models.ForeignKey(ClassAttendance, on_delete=models.CASCADE, unique=True)
+    class_attendance = models.OneToOneField(ClassAttendance, on_delete=models.CASCADE)
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,

@@ -19,7 +19,7 @@ class AttendanceStatus(Enum):
 class Student(models.Model):
     name = models.CharField(max_length=50)
     mail = models.EmailField(max_length=80, blank=False, null=False, unique=True)
-    token = models.CharField(max_length=100, blank=False, null=False, unique=True)
+    token = models.CharField(max_length=100, blank=True, null=True, unique=True)
     
     def get_id_number(self):
         if self.mail.endswith('@scaler.com'):
@@ -167,8 +167,8 @@ class ClassAttendanceWithGeoLocation(models.Model):
 
     @classmethod
     def create_with(cls, student, subject, lat, lon, accuracy):
-        class_attendance = ClassAttendance.objects.get_or_create(student=student, subject=subject)
-        class_attendance.save()
+        class_attendance, is_created = ClassAttendance.objects.get_or_create(student=student, subject=subject)
+        
         attendance = ClassAttendanceWithGeoLocation.objects.create(lat=lat, lon=lon, class_attendance=class_attendance, accuracy=accuracy)
         attendance.save()
         return attendance
@@ -188,6 +188,9 @@ class ClassAttendanceByBSM(models.Model):
         default='present'
     )
 
+    def __str__(self):
+        return f"{self.class_attendance.student.name} {self.class_attendance.subject.name}"
+
     def get_attendance_status(self):
         
         status_mapping = {
@@ -196,6 +199,17 @@ class ClassAttendanceByBSM(models.Model):
             'absent': AttendanceStatus.Absent,
         }
         return status_mapping.get(self.status)
+    
+    @classmethod
+    def create_with(cls, student, subject, status, marked_by):
+        class_attendance, _ = ClassAttendance.objects.get_or_create(student=student, subject=subject)
+        
+        attendance, _ = ClassAttendanceByBSM.objects.update_or_create(
+            class_attendance=class_attendance,
+            defaults={'marked_by':marked_by, 'status':status},
+        )
+        attendance.save()
+        return attendance
 
 
 class GeoLocationDataContrib(models.Model):

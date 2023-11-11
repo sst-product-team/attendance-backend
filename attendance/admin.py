@@ -17,6 +17,11 @@ class ClassAttendanceAdmin(admin.ModelAdmin):
 class FalseAttemptAdmin(admin.ModelAdmin):
     list_filter = ('subject', 'student')  # Add the fields you want to use as filters
 
+class ClassAttendanceByBSMAdmin(admin.ModelAdmin):
+    list_filter = ('__str__', 'status')  # Add the fields you want to use as filters
+    list_filter = ('status', 'class_attendance__subject', 'class_attendance__student')  # Add the fields you want to use as filters
+    list_editable = ('status',)
+
 
 admin.site.register(ClassAttendanceByBSM)
 admin.site.register(Student)

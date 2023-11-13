@@ -154,7 +154,7 @@ def getcurclassattendance(request):
     return JsonResponse(details)
 
 def injest_to_scaler(request, pk):
-    if not request.user.is_authenticated:
+    if (not request.user.is_authenticated) or request.user.email != 'diwakar.gupta@scaler.com':
         return JsonResponse({"message": "You are not authorized to access this page", "status": "error"}, status=403)
 
     return JsonResponse({'PK': pk})

@@ -73,8 +73,12 @@ def register(request):
     
     user_object_query = Student.objects.filter(mail=details['mail'])
     if user_object_query.exists():
-        user_obj = user_object_query[:1].get()
-        if user_obj.token == details['token']:
+        user_obj = user_object_query.first()
+        if not user_obj.token:
+            user_obj.token = details['token']
+            user_obj.save()
+            return JsonResponse(details)
+        elif user_obj.token == details['token']:
             details["status"] = "success"
             return JsonResponse(details)
         else:

@@ -48,7 +48,7 @@ class SubjectClass(models.Model):
     @classmethod
     def get_current_class(cls):
         current_time = timezone.now()
-        filtered_subject_class = SubjectClass.objects.filter(class_start_time__lte=current_time, class_end_time__gte=current_time).first()
+        filtered_subject_class = SubjectClass.objects.filter(class_start_time__lte=current_time).order_by('class_start_time').last()
         if filtered_subject_class:
             return filtered_subject_class
         else:

@@ -148,3 +148,9 @@ def getcurclassattendance(request):
     details["attendance_time"] = time
 
     return JsonResponse(details)
+
+def injest_to_scaler(request, pk):
+    if not request.user.is_authenticated:
+        return JsonResponse({"message": "You are not authorized to access this page", "status": "error"}, status=403)
+
+    return JsonResponse({'PK': pk})

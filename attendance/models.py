@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.db import models
 from django.db.models import Min
 from django.db.models import F
@@ -47,16 +48,26 @@ class SubjectClass(models.Model):
 
     @classmethod
     def get_current_class(cls):
+        cache_key = 'get_current_class'
+        result = cache.get(cache_key)
+
+        if result is not None:
+            return result
+
         current_time = timezone.now()
         filtered_subject_class = SubjectClass.objects.filter(class_start_time__lte=current_time, class_end_time__gte=current_time).first()
+        
         if filtered_subject_class:
-            return filtered_subject_class
+            result = filtered_subject_class
         else:
             nearest_next_class = SubjectClass.objects.filter(class_start_time__gt=current_time).order_by('class_start_time').first()
             if nearest_next_class:
-                return nearest_next_class
+                result = nearest_next_class
             else:
-                return None
+                result = None
+        
+        cache.set(cache_key, result, 60 * 5)
+        return result
 
     
     def is_in_attendance_window(self):

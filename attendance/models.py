@@ -38,8 +38,8 @@ class SubjectClass(models.Model):
     name = models.CharField(max_length=50)
     attendance_start_time = models.DateTimeField()
     attendance_end_time = models.DateTimeField(blank=True, null=True)
-    class_start_time = models.DateTimeField(blank=True, null=True, db_index=True)
-    class_end_time = models.DateTimeField(blank=True, null=True)
+    class_start_time = models.DateTimeField(db_index=True)
+    class_end_time = models.DateTimeField()
 
 
     def __str__(self):
@@ -48,7 +48,7 @@ class SubjectClass(models.Model):
     @classmethod
     def get_current_class(cls):
         current_time = timezone.now()
-        filtered_subject_class = SubjectClass.objects.filter(class_start_time__lte=current_time).order_by('class_start_time').last()
+        filtered_subject_class = SubjectClass.objects.filter(class_start_time__lte=current_time, class_end_time__gte=current_time).first()
         if filtered_subject_class:
             return filtered_subject_class
         else:
@@ -61,7 +61,7 @@ class SubjectClass(models.Model):
     
     def is_in_attendance_window(self):
         current_time = timezone.now()
-        return self.attendance_start_time <= current_time <= (self.attendance_end_time if self.attendance_end_time else current_time)
+        return self.attendance_start_time <= current_time <= (self.attendance_end_time if self.attendance_end_time else self.class_end_time)
 
 
 class ClassAttendance(models.Model):

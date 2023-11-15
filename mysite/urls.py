@@ -24,4 +24,5 @@ urlpatterns = [
     path('ping/', replyPing, name="ping"),
     path("attendance/", include("attendance.urls")),
     path('admin/', admin.site.urls),
+    path("accounts/", include("django.contrib.auth.urls")),
 ]

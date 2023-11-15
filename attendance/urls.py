@@ -12,6 +12,7 @@ urlpatterns = [
     path("getcurclassattendance/", views.getcurclassattendance, name="getcurclassattendance"),
     path("get_all_attendance/", views.get_all_attendance, name="get_all_attendance"),
     path("cache/", include([
+        path("", cache_clear.home, name="cache_home_page"),
         path("clear_get_current_class", cache_clear.clear_get_current_class, name='clear_get_current_class')
     ])),
 ]

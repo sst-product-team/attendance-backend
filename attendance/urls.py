@@ -1,6 +1,7 @@
-from django.urls import path
+from django.urls import path, include
 
 from . import views
+from . import cache_clear
 
 urlpatterns = [
     path("ping", views.ping, name="index"),
@@ -10,4 +11,7 @@ urlpatterns = [
     # path("geo/", views.geo, name="register"),
     path("getcurclassattendance/", views.getcurclassattendance, name="getcurclassattendance"),
     path("get_all_attendance/", views.get_all_attendance, name="get_all_attendance"),
+    path("cache/", include([
+        path("clear_get_current_class", cache_clear.clear_get_current_class, name='clear_get_current_class')
+    ])),
 ]

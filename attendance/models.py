@@ -33,6 +33,10 @@ class Student(models.Model):
     @classmethod
     def get_object_with_token(cls, token):
         return Student.objects.get(token=token)
+    
+    @classmethod
+    def get_all_students(cls):
+        return Student.objects.filter(mail__endswith='@sst.scaler.com')
 
 
 class SubjectClass(models.Model):
@@ -74,6 +78,9 @@ class SubjectClass(models.Model):
         current_time = timezone.now()
         return self.attendance_start_time <= current_time <= (self.attendance_end_time if self.attendance_end_time else self.class_end_time)
 
+    def get_all_attendance(self):
+        all_students = ClassAttendance.objects.filter(subject_id=self.id).select_related('student').all()
+        return all_students
 
 class ClassAttendance(models.Model):
     creation_time = models.DateTimeField(auto_now=True)

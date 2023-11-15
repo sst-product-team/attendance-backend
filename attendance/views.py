@@ -1,5 +1,6 @@
+from django.core.cache import cache
 from django.http import HttpResponse, JsonResponse
-from attendance.models import SubjectClass, Student, ClassAttendance, GeoLocationDataContrib, FalseAttemptGeoLocation, ClassAttendanceWithGeoLocation
+from attendance.models import SubjectClass, Student, AttendanceStatus, ClassAttendance, GeoLocationDataContrib, FalseAttemptGeoLocation, ClassAttendanceWithGeoLocation
 from django.views.decorators.csrf import csrf_exempt
 import json
 
@@ -128,6 +129,53 @@ def get_all_attendance(request):
         all_attendances.append(details)
 
     return JsonResponse(all_attendances, safe=False)
+
+
+def get_current_class_attendance(request):
+    cache_key = 'get_current_class_attendance'
+    result = cache.get(cache_key)
+    if result is not None:
+            return JsonResponse(result, safe=False)
+
+    current_class = SubjectClass.get_current_class()
+    if not current_class:
+        return JsonResponse(None, safe=False)
+    
+    all_attendance = current_class.get_all_attendance()
+
+    details = {}
+    details["name"] = current_class.name
+    details["class_start_time"] = current_class.class_start_time
+    details["class_end_time"] = current_class.class_end_time
+    details["attendance_start_time"] = current_class.attendance_start_time
+    details["attendance_end_time"] = current_class.attendance_end_time
+    
+    json_attendance = []
+    mail_set = set()
+    for attendance in all_attendance:
+        json_attendance.append({
+            'mail': attendance.student.mail,
+            'name': attendance.student.name,
+            'status': attendance.get_attendance_status().name
+        })
+        mail_set.add(attendance.student.mail)
+    response = {}
+    response['current_class'] = details
+    response['all_attendance'] = json_attendance
+
+    all_students = Student.get_all_students()
+
+    for student in all_students:
+        if student.mail not in mail_set:
+            json_attendance.append({
+                'mail': student.mail,
+                'name': student.name,
+                'status': AttendanceStatus.Absent.name,
+            })
+
+    cache.set(cache_key, response, 60 * 5)
+
+    return JsonResponse(response, safe=False)
 
 
 @csrf_exempt

@@ -33,8 +33,13 @@ with open(csv_file_path, 'r') as file:
         if row[ClassInCSV] == IdleValueInCSV or row[ClassInCSV] not in attendance_status_mapper:
             continue
         
-        print(row['mail'].lower())
-        student, is_created = Student.objects.get_or_create(mail=row['mail'].lower())
+        mail = row['mail'].lower()
+        if mail.endswith('@ms.sst.scaler.com'):
+            mail = mail.replace('@ms.sst.scaler.com', '@sst.scaler.com')
+
+        print(mail)
+        
+        student, is_created = Student.objects.get_or_create(mail=mail)
         if (student.name == None or len(student.name) == 0):
             student.name = row['NAME']
             student.save()

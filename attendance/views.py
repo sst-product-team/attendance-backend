@@ -206,3 +206,7 @@ def injest_to_scaler(request, pk):
         return JsonResponse({"message": "You are not authorized to access this page", "status": "error"}, status=403)
 
     return JsonResponse({'PK': pk})
+
+
+def can_mark_attendance(request):
+    return JsonResponse(request.user.is_staff, safe=False)

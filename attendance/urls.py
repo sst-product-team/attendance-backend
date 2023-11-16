@@ -17,4 +17,5 @@ urlpatterns = [
         path("get_current_class_attendance", cache_clear.get_current_class_attendance, name='clear_get_current_class_attendance'),
     ])),
     path('get_current_class_attendance/', views.get_current_class_attendance, name='get_current_class_attendance'),
+    path('can_mark_attendance/', views.can_mark_attendance, name='can_mark_attendance'),
 ]

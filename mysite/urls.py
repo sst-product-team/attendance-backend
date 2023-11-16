@@ -16,11 +16,13 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
+from django.views.generic import TemplateView
 
 def replyPing(request):
     return JsonResponse({"message":"pong"})
 
 urlpatterns = [
+    path('', TemplateView.as_view(template_name='attendance/index.html'), name='index'),
     path('ping/', replyPing, name="ping"),
     path("attendance/", include("attendance.urls")),
     path('admin/', admin.site.urls),

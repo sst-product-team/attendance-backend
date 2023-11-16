@@ -79,7 +79,7 @@ class SubjectClass(models.Model):
         return self.attendance_start_time <= current_time <= (self.attendance_end_time if self.attendance_end_time else self.class_end_time)
 
     def get_all_attendance(self):
-        all_students = ClassAttendance.objects.filter(subject_id=self.id).select_related('student').all()
+        all_students = ClassAttendance.objects.filter(subject=self).select_related('student').all()
         return all_students
 
 class ClassAttendance(models.Model):
@@ -127,7 +127,7 @@ class ClassAttendance(models.Model):
         return marked_by_bsm.get_attendance_status()
     
     def get_attendance_with_geo_location_status(self):
-        with_geo_location = ClassAttendanceByBSM.objects.filter(class_attendance=self).first()
+        with_geo_location = ClassAttendanceWithGeoLocation.objects.filter(class_attendance=self).first()
         if with_geo_location == None:
             return None
         return with_geo_location.get_attendance_status()

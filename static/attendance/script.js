@@ -10,6 +10,26 @@ async function fetchJSONData() {
   }
 }
 
+async function markAttendance(mail, status) {
+  try {
+    const response = await fetch("/attendance/mark_attendance/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        mail,
+        status,
+      }),
+    });
+    const jsonData = await response.json();
+    return jsonData;
+  } catch (error) {
+    console.error("Error fetching JSON data:", error);
+    return [];
+  }
+}
+
 async function isStaff() {
   try {
     const response = await fetch("/attendance/can_mark_attendance/");
@@ -37,39 +57,72 @@ async function populateTable() {
   // Loop through the JSON data and create table rows
   let allAttendance = jsonData["all_attendance"];
   for (let i = 0; i < allAttendance.length; i++) {
-    var row = tableBody.insertRow();
-    var cell1 = row.insertCell(0);
-    var cell2 = row.insertCell(1);
-    var cell3 = row.insertCell(2);
-    var cell4 = row.insertCell(3);
+    let row = tableBody.insertRow();
+    let cell1 = row.insertCell(0);
+    let cell2 = row.insertCell(1);
+    let cell3 = row.insertCell(2);
+    let cell4 = row.insertCell(3);
 
     cell1.innerHTML = i;
     cell2.innerHTML = allAttendance[i].name;
     cell3.innerHTML = allAttendance[i].mail;
 
-    allAttendance[i].status = allAttendance[i].status.toLowerCase();
+    let getInnerHtmlForCellFour = (status, mail) => {
+      status = status.toLowerCase();
+      return `<select default=${status} id="${mail}">
+            <option value="present" ${
+              status === "present" ? "selected" : ""
+            }>Present</option>
+            <option value="absent" ${
+              status === "absent" ? "selected" : ""
+            }>Absent</option>
+            <option value="proxy" ${
+              status === "proxy" ? "selected" : ""
+            }>Proxy</option>
+            </select>`;
+    };
 
     if (canMarkAttendance) {
-      cell4.innerHTML = `<select default=${allAttendance[i].status} id="${
+      cell4.innerHTML = getInnerHtmlForCellFour(
+        allAttendance[i].status,
         allAttendance[i].mail
-      }">
-      <option value="present" ${
-        allAttendance[i].status === "present" ? "selected" : ""
-      }>Present</option>
-      <option value="absent" ${
-        allAttendance[i].status === "absent" ? "selected" : ""
-      }>Absent</option>
-      <option value="proxy" ${
-        allAttendance[i].status === "proxy" ? "selected" : ""
-      }>Proxy</option>
-      </select>`;
+      );
 
       // Add event listener to the dynamically created select element
       let selectElement = document.getElementById(`${allAttendance[i].mail}`);
-      selectElement.addEventListener("change", function (event) {
+      selectElement.addEventListener("change", async function (event) {
         let selectedValue = event.target.value;
         let selectedMail = allAttendance[i].mail;
-        console.log(selectedMail, selectedValue);
+
+        console.log(selectedValue, selectedMail);
+
+        let response = await markAttendance(
+          selectedMail,
+          selectedValue.toLowerCase()
+        );
+
+        // Set the selected option to response.status
+        let selectedIndex;
+        switch (response.status.toLowerCase()) {
+          case "present":
+            selectedIndex = 0;
+            break;
+          case "absent":
+            selectedIndex = 1;
+            break;
+          case "proxy":
+            selectedIndex = 2;
+            break;
+          default:
+            selectedIndex = 1; // Default to "present" if the status is not recognized
+        }
+
+        selectElement.selectedIndex = selectedIndex;
+
+        cell3.innerHTML = response.mail;
+
+        allAttendance[i].mail = response.mail;
+        allAttendance[i].status = response.status;
       });
     } else {
       cell4.innerHTML = allAttendance[i].status;

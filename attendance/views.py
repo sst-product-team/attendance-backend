@@ -1,6 +1,6 @@
 from django.core.cache import cache
 from django.http import HttpResponse, JsonResponse
-from attendance.models import SubjectClass, Student, AttendanceStatus, ClassAttendance, GeoLocationDataContrib, FalseAttemptGeoLocation, ClassAttendanceWithGeoLocation
+from attendance.models import SubjectClass, Student, ClassAttendanceByBSM, AttendanceStatus, ClassAttendance, GeoLocationDataContrib, FalseAttemptGeoLocation, ClassAttendanceWithGeoLocation
 from django.views.decorators.csrf import csrf_exempt
 import json
 
@@ -210,3 +210,29 @@ def injest_to_scaler(request, pk):
 
 def can_mark_attendance(request):
     return JsonResponse(request.user.is_staff, safe=False)
+
+@csrf_exempt
+def mark_attendance(request):
+    if not request.user.is_staff:
+        return JsonResponse(
+            {"message": "You are not authorized to access this page", "status": "error"},
+            status=403
+        )
+    
+    curr_class = SubjectClass.get_current_class()
+    if curr_class == None:
+        return JsonResponse({}, status=400)
+    
+    data = json.loads(request.body)
+    mail = data['mail']
+    status = data['status']
+    
+    student = Student.objects.get(mail = mail)
+
+    attendance = ClassAttendanceByBSM.create_with(student, curr_class, status, Student.objects.get(mail="diwakar.gupta@scaler.com"))
+    attendance.save()
+
+    return JsonResponse({
+        "mail": mail,
+        "status": attendance.class_attendance.get_attendance_status().name,
+    })

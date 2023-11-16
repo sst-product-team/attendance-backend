@@ -18,4 +18,5 @@ urlpatterns = [
     ])),
     path('get_current_class_attendance/', views.get_current_class_attendance, name='get_current_class_attendance'),
     path('can_mark_attendance/', views.can_mark_attendance, name='can_mark_attendance'),
+    path('mark_attendance/', views.mark_attendance, name='mark_attendance'),
 ]

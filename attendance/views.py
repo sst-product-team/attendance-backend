@@ -3,6 +3,7 @@ from django.http import HttpResponse, JsonResponse
 from attendance.models import SubjectClass, Student, ClassAttendanceByBSM, AttendanceStatus, ClassAttendance, GeoLocationDataContrib, FalseAttemptGeoLocation, ClassAttendanceWithGeoLocation
 from django.views.decorators.csrf import csrf_exempt
 import json
+from utils.version_checker import compare_versions
 
 
 AVG_LAT = 12.83849392
@@ -22,10 +23,13 @@ def index(request):
     lat = (data['latitutde'])
     lon = (data['longitude'])
     token = data["token"]
-    if 'accuracy' not in data:
+    version = data["version"] if "version" in data else "0.0.0"
+
+    if 'accuracy' not in data or compare_versions(version, '0.2.3') < 0:
         return JsonResponse({
             "message": "Please update your app"
         }, status=400)
+
     accuracy = data['accuracy']
 
     student = Student.objects.get(token=token)
@@ -133,46 +137,51 @@ def get_all_attendance(request):
 
 def get_current_class_attendance(request):
     cache_key = 'get_current_class_attendance'
-    result = cache.get(cache_key)
-    if result is not None:
-            return JsonResponse(result, safe=False)
+        
+    def fetchLatestAttendances():
+        current_class = SubjectClass.get_current_class()
+        if not current_class:
+            return JsonResponse(None, safe=False)
+        
+        all_attendance = current_class.get_all_attendance()
 
-    current_class = SubjectClass.get_current_class()
-    if not current_class:
-        return JsonResponse(None, safe=False)
-    
-    all_attendance = current_class.get_all_attendance()
-
-    details = {}
-    details["name"] = current_class.name
-    details["class_start_time"] = current_class.class_start_time
-    details["class_end_time"] = current_class.class_end_time
-    details["attendance_start_time"] = current_class.attendance_start_time
-    details["attendance_end_time"] = current_class.attendance_end_time
-    
-    json_attendance = []
-    mail_set = set()
-    for attendance in all_attendance:
-        json_attendance.append({
-            'mail': attendance.student.mail,
-            'name': attendance.student.name,
-            'status': attendance.get_attendance_status().name
-        })
-        mail_set.add(attendance.student.mail)
-    response = {}
-    response['current_class'] = details
-    response['all_attendance'] = json_attendance
-
-    all_students = Student.get_all_students()
-
-    for student in all_students:
-        if student.mail not in mail_set:
+        details = {}
+        details["name"] = current_class.name
+        details["class_start_time"] = current_class.class_start_time
+        details["class_end_time"] = current_class.class_end_time
+        details["attendance_start_time"] = current_class.attendance_start_time
+        details["attendance_end_time"] = current_class.attendance_end_time
+        
+        json_attendance = []
+        mail_set = set()
+        for attendance in all_attendance:
             json_attendance.append({
-                'mail': student.mail,
-                'name': student.name,
-                'status': AttendanceStatus.Absent.name,
+                'mail': attendance.student.mail,
+                'name': attendance.student.name,
+                'status': attendance.get_attendance_status().name
             })
+            mail_set.add(attendance.student.mail)
+        response = {}
+        response['current_class'] = details
+        response['all_attendance'] = json_attendance
 
+        all_students = Student.get_all_students()
+
+        for student in all_students:
+            if student.mail not in mail_set:
+                json_attendance.append({
+                    'mail': student.mail,
+                    'name': student.name,
+                    'status': AttendanceStatus.Absent.name,
+                })
+        return response
+
+    if not request.user.is_staff:
+        result = cache.get(cache_key)
+        if result is not None:
+                return JsonResponse(result, safe=False)
+
+    response = fetchLatestAttendances()
     cache.set(cache_key, response, 60 * 5)
 
     return JsonResponse(response, safe=False)

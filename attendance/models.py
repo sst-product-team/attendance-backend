@@ -37,6 +37,11 @@ class Student(models.Model):
     @classmethod
     def get_all_students(cls):
         return Student.objects.filter(mail__endswith='@sst.scaler.com')
+    
+    def save(self, *args, **kwargs):
+        self.mail = self.mail.lower()
+        
+        super().save(*args, **kwargs)
 
 
 class SubjectClass(models.Model):

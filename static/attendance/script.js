@@ -23,6 +23,9 @@ async function markAttendance(mail, status) {
       }),
     });
     const jsonData = await response.json();
+    console.log(
+      `Attendance of ${jsonData["mail"]} marked to ${jsonData["status"]}`
+    );
     return jsonData;
   } catch (error) {
     console.error("Error fetching JSON data:", error);
@@ -93,8 +96,6 @@ async function populateTable() {
       selectElement.addEventListener("change", async function (event) {
         let selectedValue = event.target.value;
         let selectedMail = allAttendance[i].mail;
-
-        console.log(selectedValue, selectedMail);
 
         let response = await markAttendance(
           selectedMail,

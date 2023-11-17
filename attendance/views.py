@@ -242,7 +242,7 @@ def mark_attendance(request):
     
     student = Student.objects.get(mail = mail)
 
-    attendance = ClassAttendanceByBSM.create_with(student, curr_class, status, Student.objects.get(mail="diwakar.gupta@scaler.com"))
+    attendance = ClassAttendanceByBSM.create_with(student, curr_class, status, request.user)
     attendance.save()
 
     return JsonResponse({

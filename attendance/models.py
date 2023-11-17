@@ -210,7 +210,7 @@ class ClassAttendanceByBSM(models.Model):
         ('present', 'Present'),
         ('absent', 'Absent'),
     ]
-    marked_by = models.ForeignKey(Student, on_delete=models.CASCADE)
+    marked_by = models.ForeignKey(User, on_delete=models.CASCADE)
     class_attendance = models.OneToOneField(ClassAttendance, on_delete=models.CASCADE)
     status = models.CharField(
         max_length=10,

@@ -92,6 +92,10 @@ def register(request):
     else:
         student = Student.objects.create(name=details['name'], mail=details['mail'], token=details['token'])
         student.save()
+
+        if details['mail'].endswith('@scaler.com'):
+            student.create_django_user()
+
     details["status"] = "success"
     return JsonResponse(details)
 

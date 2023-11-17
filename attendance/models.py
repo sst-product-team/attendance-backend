@@ -4,6 +4,7 @@ from django.db.models import Min
 from django.db.models import F
 from django.utils import timezone
 from enum import Enum
+from django.contrib.auth.models import User
 
 
 def round_coordinates(num):
@@ -42,6 +43,12 @@ class Student(models.Model):
         self.mail = self.mail.lower()
         
         super().save(*args, **kwargs)
+    
+    def create_django_user(self):
+        user = User.objects.create_user(username=self.mail, email=self.mail, password=None)
+        user.set_unusable_password()
+        user.save()
+        return user
 
 
 class SubjectClass(models.Model):

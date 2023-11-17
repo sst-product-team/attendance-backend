@@ -59,7 +59,7 @@ def index(request):
     else:
         FalseAttemptGeoLocation.objects.create(student=student, subject=curr_class, lat=lat, lon=lon, accuracy=accuracy).save()
         return JsonResponse({
-            "message": "You are outside classroom"
+            "message": "Move a little inside classroom and mark again"
         }, status=400)
 
 @csrf_exempt

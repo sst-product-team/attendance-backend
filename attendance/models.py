@@ -145,17 +145,22 @@ class ClassAttendance(models.Model):
         return with_geo_location.get_attendance_status()
     
     def get_attendance_status(self):
-
         by_bsm = self.get_attendance_by_bsm_status()
-        if by_bsm != None:
-            return by_bsm
-        else:
-            with_geo_location = self.get_attendance_with_geo_location_status()
-            if with_geo_location != None:
-                return with_geo_location
-            else:
-                return AttendanceStatus.Absent
 
+        if by_bsm == AttendanceStatus.Present:
+            return AttendanceStatus.Present
+
+        if by_bsm == AttendanceStatus.Proxy:
+            return AttendanceStatus.Proxy
+        
+        with_geo_location = self.get_attendance_with_geo_location_status()
+        
+        if with_geo_location == AttendanceStatus.Present:
+            return AttendanceStatus.Present
+        if with_geo_location == AttendanceStatus.Proxy:
+            return AttendanceStatus.Proxy
+
+        return AttendanceStatus.Absent
 
 class ClassAttendanceWithGeoLocation(models.Model):
     STATUS_CHOICES = [

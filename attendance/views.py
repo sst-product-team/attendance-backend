@@ -2,6 +2,7 @@ from django.core.cache import cache
 from django.http import HttpResponse, JsonResponse
 from attendance.models import SubjectClass, Student, ClassAttendanceByBSM, AttendanceStatus, ClassAttendance, GeoLocationDataContrib, FalseAttemptGeoLocation, ClassAttendanceWithGeoLocation
 from django.views.decorators.csrf import csrf_exempt
+from utils.jwt_token_decryption import decode_jwt_token
 import json
 from utils.version_checker import compare_versions
 
@@ -19,16 +20,21 @@ def ping(request):
 @csrf_exempt
 def index(request):
     data = json.loads(request.body)
-    print(data)
-    lat = (data['latitutde'])
-    lon = (data['longitude'])
-    token = data["token"]
-    version = data["version"] if "version" in data else "0.0.0"
-
-    if 'accuracy' not in data or compare_versions(version, '0.2.3') < 0:
+   
+    if 'accuracy' not in data or 'version' not in data or compare_versions(data['version'], '0.2.4') < 0:
         return JsonResponse({
             "message": "Please update your app"
         }, status=400)
+
+
+    payload = decode_jwt_token(data['jwtToken'])
+
+    if 'error' in payload:
+       return JsonResponse({"message": data['error']}, status=400) 
+
+    lat = (data['latitutde'])
+    lon = (data['longitude'])
+    token = payload["did"]
 
     accuracy = data['accuracy']
 
@@ -67,14 +73,19 @@ def register(request):
     details = {}
     
     data = json.loads(request.body)
-    print(data)
+    
+    details['name'] = data["name"]
+    data = decode_jwt_token(data['jwtToken'])
 
-    details['mail'] = data["email"]
+    if 'error' in data:
+       return JsonResponse({"message": data['error']}, status=400) 
+
+    details['mail'] = data["iss"]
+    details['token'] = data['did']
+
     if not (details['mail'].endswith("@sst.scaler.com") or details['mail'].endswith("@scaler.com")):
         return JsonResponse({"message": "mail should end with @sst.scaler.com"}, status=400)
     
-    details['token'] = data["uid"]
-    details['name'] = data["name"] if 'name' in data else ""
     
     user_object_query = Student.objects.filter(mail=details['mail'])
     if user_object_query.exists():

@@ -23,6 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.environ.get('SECRET_KEY') if os.environ.get('SECRET_KEY') else 'insecure'
+JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY') if os.environ.get('JWT_SECRET_KEY') else 'this_is_not_secret_key'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True

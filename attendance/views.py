@@ -27,7 +27,7 @@ def ping(request):
 def index(request):
     data = json.loads(request.body)
    
-    if 'accuracy' not in data or 'version' not in data or compare_versions(data['version'], APP_LATEST_VERSION) < 0:
+    if 'accuracy' not in data or 'version' not in data or compare_versions(data['version'], ProjectConfiguration.get_config().APP_LATEST_VERSION) < 0:
         return JsonResponse({
             "message": "Please update your app"
         }, status=400)

@@ -9,6 +9,7 @@ from utils.version_checker import compare_versions
 
 AVG_LAT = 12.83849392
 AVG_LON = 77.66468718
+APP_LATEST_VERSION = '0.2.4'
 
 def is_in_class(lat, lon, accuracy):
     # return True
@@ -21,7 +22,7 @@ def ping(request):
 def index(request):
     data = json.loads(request.body)
    
-    if 'accuracy' not in data or 'version' not in data or compare_versions(data['version'], '0.2.4') < 0:
+    if 'accuracy' not in data or 'version' not in data or compare_versions(data['version'], APP_LATEST_VERSION) < 0:
         return JsonResponse({
             "message": "Please update your app"
         }, status=400)
@@ -74,6 +75,11 @@ def register(request):
     
     data = json.loads(request.body)
     
+    if 'jwtToken' not in data:
+        return JsonResponse({
+            "message": "Please update your app"
+        }, status=400)
+
     details['name'] = data["name"]
     data = decode_jwt_token(data['jwtToken'])
 

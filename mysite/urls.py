@@ -17,12 +17,26 @@ from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
 from django.views.generic import TemplateView
+from django.urls import reverse
 
 def replyPing(request):
     return JsonResponse({"message":"pong"})
 
+
+class AttendanceTemplateView(TemplateView):
+    template_name = 'attendance/index.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+
+        # Add your data to the context
+        context['markAttendanceURL'] = reverse('mark_attendance');
+        context['getAttendanceURL'] = reverse('get_current_class_attendance')
+        return context
+
+
 urlpatterns = [
-    path('', TemplateView.as_view(template_name='attendance/index.html'), name='index'),
+    path('', AttendanceTemplateView.as_view(), name='index'),
     path('ping/', replyPing, name="ping"),
     path("attendance/", include("attendance.urls")),
     path('admin/', admin.site.urls),

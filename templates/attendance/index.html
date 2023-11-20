@@ -31,7 +31,10 @@
             <!-- Table rows will be added dynamically using JavaScript -->
         </tbody>
     </table>
-
+    <script>
+        const markAttendanceURL = "{{ markAttendanceURL }}";
+        const getAttendanceURL = "{{ getAttendanceURL }}";
+    </script>
     <script src="{% static 'attendance/script.js' %}"></script>
 </body>
 </html>

@@ -25,7 +25,12 @@ class ClassAttendanceByBSMAdmin(admin.ModelAdmin):
 
 
 class SubjectClassAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'custom_action_button')
+    list_display = ('__str__', 'custom_action_button', 'mark_attendance')
+
+
+    def mark_attendance(self, obj):
+        from django.utils.html import format_html
+        return format_html('<a class="button" href="{}">Mark Attendance</a>', reverse('getAttendanceView', args=[obj.pk]))
 
     def custom_action_button(self, obj):
         from django.utils.html import format_html

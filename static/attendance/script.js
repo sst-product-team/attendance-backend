@@ -1,7 +1,7 @@
 // Function to fetch JSON data from a file
 async function fetchJSONData() {
   try {
-    const response = await fetch("/attendance/get_current_class_attendance/");
+    const response = await fetch(getAttendanceURL);
     const jsonData = await response.json();
     return jsonData;
   } catch (error) {
@@ -12,7 +12,7 @@ async function fetchJSONData() {
 
 async function markAttendance(mail, status) {
   try {
-    const response = await fetch("/attendance/mark_attendance/", {
+    const response = await fetch(markAttendanceURL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import reverse
-from attendance.models import Student, SubjectClass, ClassAttendance, GeoLocationDataContrib, ClassAttendanceWithGeoLocation, FalseAttemptGeoLocation, ClassAttendanceByBSM
+from attendance.models import Student, SubjectClass, ClassAttendance, ProjectConfiguration, GeoLocationDataContrib, ClassAttendanceWithGeoLocation, FalseAttemptGeoLocation, ClassAttendanceByBSM
 
 # Register your models here.
 
@@ -44,3 +44,4 @@ admin.site.register(ClassAttendance, ClassAttendanceAdmin)
 admin.site.register(GeoLocationDataContrib)
 admin.site.register(ClassAttendanceWithGeoLocation, ClassAttendanceWithGeoLocationAdmin)
 admin.site.register(FalseAttemptGeoLocation, FalseAttemptAdmin)
+admin.site.register(ProjectConfiguration)

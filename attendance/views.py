@@ -1,6 +1,6 @@
 from django.core.cache import cache
 from django.http import HttpResponse, JsonResponse
-from attendance.models import SubjectClass, Student, ClassAttendanceByBSM, AttendanceStatus, ClassAttendance, GeoLocationDataContrib, FalseAttemptGeoLocation, ClassAttendanceWithGeoLocation
+from attendance.models import SubjectClass, Student, ProjectConfiguration, ClassAttendanceByBSM, AttendanceStatus, ClassAttendance, GeoLocationDataContrib, FalseAttemptGeoLocation, ClassAttendanceWithGeoLocation
 from django.views.decorators.csrf import csrf_exempt
 from utils.jwt_token_decryption import decode_jwt_token
 import json
@@ -13,7 +13,8 @@ AVG_LON = 77.66468718
 APP_LATEST_VERSION = '0.2.5'
 
 def version(request):
-    return JsonResponse({'version': APP_LATEST_VERSION, 'APK_FILE': 'https://drive.google.com/file/d/1dgL7fEq16OugBBxLo2Twn_SC6IGXYmjp/view?usp=sharing'})
+    config = ProjectConfiguration.get_config()
+    return JsonResponse({'version': config.APP_LATEST_VERSION, 'APK_FILE': config.APK_FILE})
 
 def is_in_class(lat, lon, accuracy):
     # return True

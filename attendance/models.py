@@ -280,3 +280,24 @@ class FalseAttemptGeoLocation(models.Model):
     def __str__(self):
         return str(self.student.mail)
 
+
+class ProjectConfiguration(models.Model):
+    APP_LATEST_VERSION = models.CharField(max_length=12)
+    APK_FILE = models.TextField()
+
+    def save(self, *args, **kwargs):
+        # Override save to ensure only one instance is saved
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get_config(cls):
+        cache_key = 'ProjectConfigurationSingeltonObject'
+        result = cache.get(cache_key)
+
+        if result is not None:
+            return result
+        # Load the singleton object and return its configuration values
+        obj, _ = cls.objects.get_or_create(pk=1, defaults={'APP_LATEST_VERSION': '0.2.5', 'APK_FILE': 'https://drive.google.com/file/d/1dgL7fEq16OugBBxLo2Twn_SC6IGXYmjp/view?usp=sharing'})
+        cache.set(cache_key, obj, 60 * 5)
+        return obj

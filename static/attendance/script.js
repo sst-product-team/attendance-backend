@@ -59,6 +59,8 @@ async function populateTable() {
 
   // Loop through the JSON data and create table rows
   let allAttendance = jsonData["all_attendance"];
+  allAttendance.sort((a, b) => (a.mail > b.mail ? 1 : -1));
+
   for (let i = 0; i < allAttendance.length; i++) {
     let row = tableBody.insertRow();
     let cell1 = row.insertCell(0);

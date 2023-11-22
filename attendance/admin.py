@@ -25,16 +25,16 @@ class ClassAttendanceByBSMAdmin(admin.ModelAdmin):
 
 
 class SubjectClassAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'custom_action_button', 'mark_attendance')
+    list_display = ('__str__', 'is_attendance_mandatory', 'custom_action_button', 'mark_attendance')
 
 
     def mark_attendance(self, obj):
         from django.utils.html import format_html
-        return format_html('<a class="button" href="{}">Mark Attendance</a>', reverse('getAttendanceView', args=[obj.pk]))
+        return format_html('<a class="button" target="_blank" href="{}">Mark Attendance</a>', reverse('getAttendanceView', args=[obj.pk]))
 
     def custom_action_button(self, obj):
         from django.utils.html import format_html
-        return format_html('<a class="button" href="{}">Injest to Scaler</a>', reverse('injest_to_scaler', args=[obj.pk]))
+        return format_html('<a class="button" target="_blank" href="{}">Injest to Scaler</a>', reverse('injest_to_scaler', args=[obj.pk]))
 
     
 admin.site.register(ClassAttendanceByBSM, ClassAttendanceByBSMAdmin)

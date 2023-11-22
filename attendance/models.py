@@ -20,8 +20,8 @@ class AttendanceStatus(Enum):
 # Create your models here.
 class Student(models.Model):
     name = models.CharField(max_length=50)
-    mail = models.EmailField(max_length=80, blank=False, null=False, unique=True)
-    token = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    mail = models.EmailField(max_length=80, blank=False, null=False, unique=True, db_index=True)
+    token = models.CharField(max_length=100, blank=True, null=True, unique=True, db_index=True)
     
     def get_id_number(self):
         if self.mail.endswith('@scaler.com'):
@@ -57,7 +57,7 @@ class SubjectClass(models.Model):
     attendance_end_time = models.DateTimeField(blank=True, null=True)
     class_start_time = models.DateTimeField(db_index=True)
     class_end_time = models.DateTimeField()
-
+    is_attendance_mandatory = models.BooleanField(default=True)
 
     def __str__(self):
         return f"{self.class_start_time.astimezone().strftime('%d/%m/%Y')} => {self.name}"

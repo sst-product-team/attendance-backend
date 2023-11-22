@@ -24,9 +24,16 @@ class ClassAttendanceByBSMAdmin(admin.ModelAdmin):
     list_editable = ('status',)
 
 
+class StudentAdmin(admin.ModelAdmin):
+    list_display = ('name', 'mail', 'show_attendance')
+
+    def show_attendance(self, obj):
+        from django.utils.html import format_html
+        return format_html('<a class="button" target="_blank" href="{}">Show Attendance</a>', reverse('studentAttendance', args=[obj.mail.split('@')[0]]))
+
+
 class SubjectClassAdmin(admin.ModelAdmin):
     list_display = ('__str__', 'is_attendance_mandatory', 'custom_action_button', 'mark_attendance')
-
 
     def mark_attendance(self, obj):
         from django.utils.html import format_html
@@ -38,7 +45,7 @@ class SubjectClassAdmin(admin.ModelAdmin):
 
     
 admin.site.register(ClassAttendanceByBSM, ClassAttendanceByBSMAdmin)
-admin.site.register(Student)
+admin.site.register(Student, StudentAdmin)
 admin.site.register(SubjectClass, SubjectClassAdmin)
 admin.site.register(ClassAttendance, ClassAttendanceAdmin)
 admin.site.register(GeoLocationDataContrib)

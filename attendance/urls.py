@@ -24,5 +24,7 @@ urlpatterns = [
 
     path('getAttendance/', views.get_current_class_attendance, name='get_current_class_attendance'),
     path('getAttendance/<int:pk>/', views.getAttendance, name='getAttendance'),
-    path('getAttendanceView/<int:pk>/', views.getAttendanceView, name='getAttendanceView'), 
+    path('getAttendanceView/<int:pk>/', views.getAttendanceView, name='getAttendanceView'),
+    
+    path('studentAttendance/<str:mail_prefix>/', views.studentAttendance, name='studentAttendance'),
 ]

@@ -50,6 +50,8 @@ class Student(models.Model):
         user.save()
         return user
 
+    def get_all_attendance(self):
+        return ClassAttendance.objects.filter(student=self).select_related('classattendancebybsm', 'classattendancewithgeolocation').all()
 
 
 class SubjectClass(models.Model):
@@ -94,6 +96,11 @@ class SubjectClass(models.Model):
     def get_all_attendance(self):
         all_students = ClassAttendance.objects.filter(subject=self).select_related('student').all()
         return all_students
+    
+    @classmethod
+    def get_all_classes(cls):
+        return cls.objects.all()
+
 
 class ClassAttendance(models.Model):
     creation_time = models.DateTimeField(auto_now=True)

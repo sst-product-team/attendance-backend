@@ -319,3 +319,45 @@ def getAttendanceView(request, pk):
         'markAttendanceURL': markAttendanceURL,
         'getAttendanceURL': getAttendanceURL
     })
+
+def studentAttendance(request, mail_prefix):
+    student = Student.objects.get(mail = mail_prefix+'@sst.scaler.com')
+    response = fetchAllStudentAttendances(student)
+    return JsonResponse(response, safe=False)
+
+def fetchAllStudentAttendances(student):
+    if not student:
+        return JsonResponse(None, safe=False)
+    
+    all_attendance = student.get_all_attendance()
+    
+    json_attendance = []
+    subject_pk_set = set()
+    for attendance in all_attendance:
+        json_attendance.append({
+            "name" : attendance.subject.name,
+            "class_start_time" : attendance.subject.class_start_time,
+            "class_end_time" : attendance.subject.class_end_time,
+            "is_attendance_mandatory": attendance.subject.is_attendance_mandatory,
+            'status': attendance.get_attendance_status().name
+        })
+        subject_pk_set.add(attendance.subject.pk)
+    response = {}
+    response['student'] = {
+        "name": student.name,
+        "mail": student.mail,
+    }
+    response['all_attendance'] = json_attendance
+
+    all_subjects = SubjectClass.get_all_classes()
+
+    for subject in all_subjects:
+        if subject.pk not in subject_pk_set:
+            json_attendance.append({
+                "name" : subject.name,
+                "class_start_time" : subject.class_start_time,
+                "class_end_time" : subject.class_end_time,
+                "is_attendance_mandatory": subject.is_attendance_mandatory,
+                'status': None
+            })
+    return response

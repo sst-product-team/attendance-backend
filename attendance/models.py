@@ -51,6 +51,7 @@ class Student(models.Model):
         return user
 
 
+
 class SubjectClass(models.Model):
     name = models.CharField(max_length=50)
     attendance_start_time = models.DateTimeField()
@@ -133,16 +134,14 @@ class ClassAttendance(models.Model):
     #     return ClassAttendance.objects.filter(student=student).values("subject").annotate(min_creation_time=Min('creation_time')).all()
 
     def get_attendance_by_bsm_status(self):
-        marked_by_bsm = ClassAttendanceByBSM.objects.filter(class_attendance=self).first()
-        if marked_by_bsm == None:
+        if not hasattr(self, 'classattendancebybsm'):
             return None
-        return marked_by_bsm.get_attendance_status()
+        return self.classattendancebybsm.get_attendance_status()
     
     def get_attendance_with_geo_location_status(self):
-        with_geo_location = ClassAttendanceWithGeoLocation.objects.filter(class_attendance=self).first()
-        if with_geo_location == None:
+        if not hasattr(self, 'classattendancewithgeolocation'):
             return None
-        return with_geo_location.get_attendance_status()
+        return self.classattendancewithgeolocation.get_attendance_status()
     
     def get_attendance_status(self):
         by_bsm = self.get_attendance_by_bsm_status()

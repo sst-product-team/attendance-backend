@@ -10,21 +10,49 @@ urlpatterns = [
     path("register/", views.register, name="register"),
     path("injest_to_scaler/<int:pk>/", views.injest_to_scaler, name="injest_to_scaler"),
     # path("geo/", views.geo, name="register"),
-    path("getcurclassattendance/", views.getcurclassattendance, name="getcurclassattendance"),
+    path(
+        "getcurclassattendance/",
+        views.getcurclassattendance,
+        name="getcurclassattendance",
+    ),
     path("get_all_attendance/", views.get_all_attendance, name="get_all_attendance"),
-    path("cache/", include([
-        path("", cache_clear.home, name="cache_home_page"),
-        path("clear_get_current_class", cache_clear.clear_get_current_class, name='clear_get_current_class'),
-        path("get_current_class_attendance", cache_clear.get_current_class_attendance, name='clear_get_current_class_attendance'),
-    ])),
-    path('can_mark_attendance/', views.can_mark_attendance, name='can_mark_attendance'),
-    
-    path('mark_attendance/', views.mark_attendance, name='mark_attendance'),
-    path('mark_attendance/<int:pk>/', views.mark_attendance_subject, name='mark_attendance_subject'),
-
-    path('getAttendance/', views.get_current_class_attendance, name='get_current_class_attendance'),
-    path('getAttendance/<int:pk>/', views.getAttendance, name='getAttendance'),
-    path('getAttendanceView/<int:pk>/', views.getAttendanceView, name='getAttendanceView'),
-    
-    path('studentAttendance/<str:mail_prefix>/', views.studentAttendance, name='studentAttendance'),
+    path(
+        "cache/",
+        include(
+            [
+                path("", cache_clear.home, name="cache_home_page"),
+                path(
+                    "clear_get_current_class",
+                    cache_clear.clear_get_current_class,
+                    name="clear_get_current_class",
+                ),
+                path(
+                    "get_current_class_attendance",
+                    cache_clear.get_current_class_attendance,
+                    name="clear_get_current_class_attendance",
+                ),
+            ]
+        ),
+    ),
+    path("can_mark_attendance/", views.can_mark_attendance, name="can_mark_attendance"),
+    path("mark_attendance/", views.mark_attendance, name="mark_attendance"),
+    path(
+        "mark_attendance/<int:pk>/",
+        views.mark_attendance_subject,
+        name="mark_attendance_subject",
+    ),
+    path(
+        "getAttendance/",
+        views.get_current_class_attendance,
+        name="get_current_class_attendance",
+    ),
+    path("getAttendance/<int:pk>/", views.getAttendance, name="getAttendance"),
+    path(
+        "getAttendanceView/<int:pk>/", views.getAttendanceView, name="getAttendanceView"
+    ),
+    path(
+        "studentAttendance/<str:mail_prefix>/",
+        views.studentAttendance,
+        name="studentAttendance",
+    ),
 ]

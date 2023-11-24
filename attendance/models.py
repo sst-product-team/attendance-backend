@@ -65,6 +65,14 @@ class Student(models.Model):
         )
 
 
+class Subject(models.Model):
+    name = models.CharField(max_length=50)
+    instructor_name = models.CharField(max_length=25)
+
+    def __str__(self):
+        return self.name
+
+
 class SubjectClass(models.Model):
     name = models.CharField(max_length=50)
     attendance_start_time = models.DateTimeField()
@@ -72,6 +80,9 @@ class SubjectClass(models.Model):
     class_start_time = models.DateTimeField(db_index=True)
     class_end_time = models.DateTimeField()
     is_attendance_mandatory = models.BooleanField(default=True)
+    subject = models.ForeignKey(
+        Subject, default=None, null=True, blank=True, on_delete=models.CASCADE
+    )
 
     def __str__(self):
         return (

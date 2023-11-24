@@ -17,23 +17,13 @@ import json
 from utils.version_checker import compare_versions
 from django.shortcuts import render
 from django.urls import reverse
-
-AVG_LAT = 12.83849392
-AVG_LON = 77.66468718
-APP_LATEST_VERSION = "0.2.5"
+from utils.validate_location import is_in_class
 
 
 def version(request):
     config = ProjectConfiguration.get_config()
     return JsonResponse(
         {"version": config.APP_LATEST_VERSION, "APK_FILE": config.APK_FILE}
-    )
-
-
-def is_in_class(lat, lon, accuracy):
-    # return True
-    return (
-        accuracy >= 10 and abs(AVG_LAT - lat) < 0.0001 and abs(AVG_LON - lon) < 0.0001
     )
 
 

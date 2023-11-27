@@ -83,6 +83,7 @@ class SubjectClass(models.Model):
     subject = models.ForeignKey(
         Subject, default=None, null=True, blank=True, on_delete=models.CASCADE
     )
+    is_attendance_by_geo_location_enabled = models.BooleanField(default=True)
 
     def __str__(self):
         return (

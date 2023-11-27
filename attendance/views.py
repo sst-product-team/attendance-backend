@@ -60,6 +60,13 @@ def index(request):
     curr_class = SubjectClass.get_current_class()
     if curr_class == None:
         return JsonResponse({"message": "No class active for attendance"}, status=400)
+    if not curr_class.is_attendance_by_geo_location_enabled:
+        return JsonResponse(
+            {
+                "message": "Attendance can only be marked by BSM's for this class"
+            },
+            status=400,
+        )
     if not curr_class.is_in_attendance_window():
         return JsonResponse(
             {

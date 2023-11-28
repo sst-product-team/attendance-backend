@@ -371,11 +371,17 @@ def mark_attendance_subject(request, pk):
 
 
 def getAttendance(request, pk):
+    cache_key = f"get_current_class_attendance_{pk}"
     if not request.user.is_staff:
-        return JsonResponse(None, safe=False)
+        result = cache.get(cache_key)
+        if result is not None:
+            return JsonResponse(result, safe=False)
 
     query_class = SubjectClass.objects.get(pk=pk)
     response = fetchLatestAttendances(query_class)
+
+    if (not request.user.is_staff) or (cache.get(cache_key) != None):
+        cache.set(cache_key, response, 60 * 5)
     return JsonResponse(response, safe=False)
 
 

@@ -10,10 +10,10 @@ from django.contrib.auth.models import User
 # import argparse
 
 MarkedByBSMMail = "diwakar.gupta@scaler.com"
-SubjectClassId = 22
-ClassInCSV = "11/8/2023 WebDev"
+SubjectClassId = 34
+ClassInCSV = "11/28/2023 Contest"
 
-IdleValueInCSV = "-"
+IdleValueInCSV = "A"
 
 attendance_status_mapper = {
     "P": "present",

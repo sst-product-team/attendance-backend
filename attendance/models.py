@@ -84,6 +84,7 @@ class SubjectClass(models.Model):
         Subject, default=None, null=True, blank=True, on_delete=models.CASCADE
     )
     is_attendance_by_geo_location_enabled = models.BooleanField(default=True)
+    merge_attendace_with_class = models.ForeignKey('self', blank=True, null=True, on_delete=models.DO_NOTHING, default=None)
 
     def __str__(self):
         return (

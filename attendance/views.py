@@ -275,9 +275,9 @@ def getcurclassattendance(request):
     details["attendance_end_time"] = curr_class.attendance_end_time
 
     student = Student.get_object_with_token(token)
-    time = ClassAttendance.get_latest_attendance_time(student, curr_class)
+    attendance_status = ClassAttendance.get_attendance_status_for(student, curr_class).name
 
-    details["attendance_time"] = time
+    details["attendance_status"] = attendance_status
 
     return JsonResponse(details)
 

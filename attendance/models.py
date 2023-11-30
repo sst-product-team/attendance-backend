@@ -155,16 +155,15 @@ class ClassAttendance(models.Model):
         return self.student.mail + " " + self.subject.name
 
     @classmethod
-    def get_latest_attendance_time(cls, student, subject):
+    def get_attendance_status_for(cls, student, subject):
         obj = (
             ClassAttendance.objects.filter(student=student, subject=subject)
             .order_by("creation_time")
-            .first()
         )
-        if obj == None:
-            return None
+        if obj.exists():
+            return obj.first().get_attendance_status()
         else:
-            return obj.creation_time
+            return AttendanceStatus.Absent
 
     @classmethod
     def all_subject_attendance(cls, student):

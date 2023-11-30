@@ -79,18 +79,21 @@ def index(request):
         )
 
     if is_in_class(lat, lon, accuracy):
-        if ClassAttendance.objects.filter(student=student, subject=curr_class).exists():
-            # print(f"Attendance already marked of {student.name} for class {curr_class.name}")
+        if ClassAttendance.get_attendance_status_for(student=student, subject=curr_class) == AttendanceStatus.Present:
             return JsonResponse(
-                {"class": curr_class.name, "time": curr_class.attendance_start_time}
+                {"message": "Your attendance is already marked", "class": curr_class.name, "time": curr_class.attendance_start_time}
             )
-
-        ClassAttendanceWithGeoLocation.create_with(
+        attendance = ClassAttendanceWithGeoLocation.create_with(
             student, curr_class, lat, lon, accuracy
         )
-        return JsonResponse(
-            {"class": curr_class.name, "time": curr_class.attendance_start_time}
-        )
+        if attendance.get_attendance_status() == AttendanceStatus.Present:
+            return JsonResponse(
+                {"message": "Your attendance has been marked", "class": curr_class.name, "time": curr_class.attendance_start_time}
+            )
+        else:
+            return JsonResponse(
+                {"message": "Your attendance will be verified by BSM", "status":"info",}
+            )
     else:
         FalseAttemptGeoLocation.objects.create(
             student=student, subject=curr_class, lat=lat, lon=lon, accuracy=accuracy

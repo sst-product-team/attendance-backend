@@ -258,8 +258,9 @@ class ClassAttendanceWithGeoLocation(models.Model):
             student=student, subject=subject
         )
 
-        attendance = ClassAttendanceWithGeoLocation.objects.create(
-            lat=lat, lon=lon, class_attendance=class_attendance, accuracy=accuracy
+        attendance, is_created = ClassAttendanceWithGeoLocation.objects.get_or_create(
+            class_attendance=class_attendance,
+           defaults={"lat": lat, "lon": lon, "accuracy": accuracy}, 
         )
         attendance.save()
         return attendance

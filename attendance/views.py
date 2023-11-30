@@ -386,13 +386,18 @@ def getAttendance(request, pk):
 
 
 def getAttendanceView(request, pk):
-    getAttendanceURL = reverse("getAttendance", args=[pk])
-    markAttendanceURL = reverse("mark_attendance_subject", args=[pk])
-
+    if pk:
+        getAttendanceURL = reverse("getAttendance", args=[pk])
+        markAttendanceURL = reverse("mark_attendance_subject", args=[pk])
+        noclass = False
+    else:
+        getAttendanceURL = None
+        markAttendanceURL = None
+        noclass = True
     return render(
         request,
         "attendance/index.html",
-        {"markAttendanceURL": markAttendanceURL, "getAttendanceURL": getAttendanceURL},
+        {"markAttendanceURL": markAttendanceURL, "getAttendanceURL": getAttendanceURL, "noclass": noclass},
     )
 
 

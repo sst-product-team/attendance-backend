@@ -27,7 +27,7 @@ def getAttendanceView(request):
     from attendance.models import SubjectClass
 
     curr_class = SubjectClass.get_current_class()
-    return views.getAttendanceView(request, curr_class.pk)
+    return views.getAttendanceView(request, curr_class.pk if curr_class else None)
 
 
 urlpatterns = [

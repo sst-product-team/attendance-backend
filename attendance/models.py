@@ -264,7 +264,7 @@ class ClassAttendanceWithGeoLocation(models.Model):
            defaults={"lat": lat, "lon": lon, "accuracy": accuracy}, 
         )
         attendance.save()
-        return attendance
+        return class_attendance
 
 
 class ClassAttendanceByBSM(models.Model):

@@ -407,6 +407,9 @@ def getAttendanceView(request, pk):
 def studentAttendance(request, mail_prefix):
     student = Student.objects.get(mail=mail_prefix + "@sst.scaler.com")
     response = fetchAllStudentAttendances(student)
+    for a in response['all_attendance']:
+        if not a['status']:
+           a['status'] = AttendanceStatus.Absent.name 
     return JsonResponse(response, safe=False)
 
 

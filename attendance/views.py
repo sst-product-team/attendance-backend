@@ -463,13 +463,16 @@ def fetchAllStudentAttendances(student):
             )
     return response
 
+title = "Attendance lagaya kya? 🧐"
+description = "Lagao jaldi 🤬"
+
 def sendNotification(request, pk):
     if not request.user.is_staff:
         return JsonResponse({"message": "Forbidden"}, status=400)
     student = Student.objects.get(pk = pk)
     if not student.fcmtoken:
         return JsonResponse({"message": "not send"}, status=400)
-    pushNotification([student.fcmtoken], "Title from Backend", "Description from Backend")
+    pushNotification([student.fcmtoken], title, description)
 
     return JsonResponse({"message": "sent"})
 
@@ -483,7 +486,7 @@ def sendReminderForClass(request, pk):
     students = [student for student in students if student.fcmtoken] 
     fcmtokens = [student.fcmtoken for student in students]
 
-    pushNotification(fcmtokens, "Reminder for Attendance", f"Please mark your attendance for {subject.name}")
+    pushNotification(fcmtokens, title, description)
     return JsonResponse({"message": f"Sent to {len(fcmtokens)} students", "sent_to": [
         s.name for s in students
     ]})

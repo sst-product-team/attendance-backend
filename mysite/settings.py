@@ -30,6 +30,7 @@ JWT_SECRET_KEY = (
     if os.environ.get("JWT_SECRET_KEY")
     else "this_is_not_secret_key"
 )
+FIREBASE_SERVICE_ACCOUNT_CREDENTIAL = os.environ.get("FIREBASE_SERVICE_ACCOUNT_CREDENTIAL")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True

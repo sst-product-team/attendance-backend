@@ -56,4 +56,5 @@ urlpatterns = [
         name="studentAttendance",
     ),
     path("sendNotification/<int:pk>/", views.sendNotification, name="sendNotification"),
+    path("sendReminderForClass/<int:pk>/", views.sendReminderForClass, name="sendReminderForClass"),
 ]

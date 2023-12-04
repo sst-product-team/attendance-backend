@@ -71,8 +71,9 @@ class SubjectClassAdmin(admin.ModelAdmin):
     list_display = (
         "__str__",
         "is_attendance_mandatory",
-        "custom_action_button",
+        "injest_to_scaler",
         "mark_attendance",
+        "send_reminder"
     )
 
     def mark_attendance(self, obj):
@@ -83,12 +84,20 @@ class SubjectClassAdmin(admin.ModelAdmin):
             reverse("getAttendanceView", args=[obj.pk]),
         )
 
-    def custom_action_button(self, obj):
+    def injest_to_scaler(self, obj):
         from django.utils.html import format_html
 
         return format_html(
             '<a class="button" target="_blank" href="{}">Injest to Scaler</a>',
             reverse("injest_to_scaler", args=[obj.pk]),
+        )
+    
+    def send_reminder(self, obj):
+        from django.utils.html import format_html
+
+        return format_html(
+            '<a class="button" target="_blank" href="{}">Remind Absenties</a>',
+            reverse("sendReminderForClass", args=[obj.pk]),
         )
 
 

@@ -1,6 +1,6 @@
 from django.core.cache import cache
 from django.db import models
-from django.db.models import Min
+from django.db.models import Min, Subquery, OuterRef
 from django.db.models import F
 from django.utils import timezone
 from enum import Enum
@@ -91,6 +91,32 @@ class SubjectClass(models.Model):
         return (
             f"{self.class_start_time.astimezone().strftime('%d/%m/%Y')} => {self.name}"
         )
+    
+    def get_all_students_attendance_status(self):
+        students_with_attendance = (
+            Student.get_all_students()
+            .annotate(
+                attendance_id=Subquery(
+                    ClassAttendance.objects.filter(
+                        student=OuterRef('pk'),
+                        subject=self
+                    ).values('id')[:1]
+                )
+            )
+        )
+
+        result = []
+        for student in students_with_attendance:
+            attendance_id = student.attendance_id
+
+            if attendance_id is not None:
+                attendance = ClassAttendance(id=attendance_id).get_attendance_status()
+            else:
+                attendance = AttendanceStatus.Absent
+
+            result.append((student, attendance))
+
+        return result
 
     @classmethod
     def get_current_class(cls):
@@ -367,3 +393,4 @@ class ProjectConfiguration(models.Model):
         )
         cache.set(cache_key, obj, 60 * 5)
         return obj
+

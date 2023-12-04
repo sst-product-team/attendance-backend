@@ -64,7 +64,7 @@ class StudentAdmin(admin.ModelAdmin):
         return format_html(
             '<a class="button" {} target="_blank" href="{}">Send Notification</a>',
             'disabled' if not obj.fcmtoken else '',
-            reverse("sendReminderForClass", args=[obj.pk]),
+            reverse("sendNotification", args=[obj.pk]),
         )
     send_notification.short_description = "Send Reminder"
 

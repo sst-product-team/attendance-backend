@@ -142,7 +142,7 @@ def register(request):
             user_obj.name = details["name"]
             user_obj.save()
         
-        if not user_obj.fcmtoken and details["fcmtoken"] != None:
+        if  details["fcmtoken"] != None:
             user_obj.fcmtoken = details["fcmtoken"]
             user_obj.save()
 

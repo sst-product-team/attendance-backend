@@ -62,9 +62,11 @@ class StudentAdmin(admin.ModelAdmin):
         from django.utils.html import format_html
 
         return format_html(
-            '<a class="button" target="_blank" href="{}">Send Nofitication</a>',
-            reverse("sendNotification", args=[obj.pk]),
+            '<a class="button" {} target="_blank" href="{}">Send Notification</a>',
+            'disabled' if not obj.fcmtoken else '',
+            reverse("sendReminderForClass", args=[obj.pk]),
         )
+    send_notification.short_description = "Send Reminder"
 
 
 class SubjectClassAdmin(admin.ModelAdmin):

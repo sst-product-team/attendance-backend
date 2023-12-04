@@ -55,4 +55,5 @@ urlpatterns = [
         views.studentAttendance,
         name="studentAttendance",
     ),
+    path("sendNotification/<int:pk>/", views.sendNotification, name="sendNotification"),
 ]

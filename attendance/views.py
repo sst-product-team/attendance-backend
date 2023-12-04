@@ -18,6 +18,7 @@ from utils.version_checker import compare_versions
 from django.shortcuts import render
 from django.urls import reverse
 from utils.validate_location import is_in_class
+from utils.pushNotification import pushNotification
 
 
 def version(request):
@@ -113,6 +114,10 @@ def register(request):
         return JsonResponse({"message": "Please update your app"}, status=400)
 
     details["name"] = data["name"]
+    if "fcmtoken" in data:
+        details["fcmtoken"] = data["fcmtoken"]
+    else:
+       details["fcmtoken"] = None 
     data = decode_jwt_token(data["jwtToken"])
 
     if "error" in data:
@@ -136,6 +141,10 @@ def register(request):
         if not user_obj.name:
             user_obj.name = details["name"]
             user_obj.save()
+        
+        if not user_obj.fcmtoken and details["fcmtoken"] != None:
+            user_obj.fcmtoken = details["fcmtoken"]
+            user_obj.save()
 
         if not user_obj.token:
             user_obj.token = details["token"]
@@ -152,7 +161,7 @@ def register(request):
             )
     else:
         student = Student.objects.create(
-            name=details["name"], mail=details["mail"], token=details["token"]
+            name=details["name"], mail=details["mail"], token=details["token"], fcmtoken=details["fcmtoken"]
         )
         student.save()
 
@@ -453,3 +462,13 @@ def fetchAllStudentAttendances(student):
                 }
             )
     return response
+
+@csrf_exempt
+def sendNotification(request, pk):
+    if not request.user.is_staff:
+        return JsonResponse({"message": "Forbidden"}, status=400)
+    student = Student.objects.get(pk = pk)
+    pushNotification([student.fcmtoken], "Title from Backend", "Description from Backend")
+
+    return JsonResponse({"message": "sent"})
+

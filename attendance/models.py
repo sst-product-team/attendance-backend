@@ -27,7 +27,8 @@ class Student(models.Model):
         max_length=100, blank=True, null=True, unique=True, db_index=True
     )
     user = models.ForeignKey(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
-
+    fcmtoken = models.CharField(max_length=255, blank=True, null=True)
+    
     def get_id_number(self):
         if self.mail.endswith("@scaler.com"):
             return None

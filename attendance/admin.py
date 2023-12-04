@@ -48,7 +48,7 @@ class ClassAttendanceByBSMAdmin(admin.ModelAdmin):
 
 
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ("name", "mail", "show_attendance")
+    list_display = ("name", "mail", "show_attendance", "send_notification")
 
     def show_attendance(self, obj):
         from django.utils.html import format_html
@@ -56,6 +56,14 @@ class StudentAdmin(admin.ModelAdmin):
         return format_html(
             '<a class="button" target="_blank" href="{}">Show Attendance</a>',
             reverse("studentAttendance", args=[obj.mail.split("@")[0]]),
+        )
+    
+    def send_notification(self, obj):
+        from django.utils.html import format_html
+
+        return format_html(
+            '<a class="button" target="_blank" href="{}">Send Nofitication</a>',
+            reverse("sendNotification", args=[obj.pk]),
         )
 
 

@@ -489,3 +489,28 @@ def sendReminderForClass(request, pk):
         s.name for s in students
     ]})
 
+@csrf_exempt
+def getTodaysClass(request):
+    data = json.loads(request.body)
+    token = data["token"]
+
+    today_classes = SubjectClass.get_classes_for()
+    student = Student.get_object_with_token(token)
+
+    response = []
+
+    for curr_class in today_classes:
+        details = {}
+        details["name"] = curr_class.name
+        details["class_start_time"] = curr_class.class_start_time
+        details["class_end_time"] = curr_class.class_end_time
+        details["attendance_start_time"] = curr_class.attendance_start_time
+        details["attendance_end_time"] = curr_class.attendance_end_time
+        details["is_in_attendance_window"] = curr_class.is_in_attendance_window()
+
+        attendance_status = ClassAttendance.get_attendance_status_for(student, curr_class).name
+        details["attendance_status"] = attendance_status
+        
+        response.append(details)
+
+    return JsonResponse(response, safe=False)

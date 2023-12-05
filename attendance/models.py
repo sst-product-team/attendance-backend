@@ -210,11 +210,20 @@ class SubjectClass(models.Model):
         return result
 
     @classmethod
-    def get_classes_for(cls, start=timezone.now().date(), next_x_days=1):
+    def get_classes_for(cls, start=timezone.now().date(), next_x_days=1, use_cache=True):
+        cache_key = f"get_todays_classs"
+
+        if use_cache:
+            result = cache.get(cache_key)
+            if result is not None:
+                return result
+        
         end = start+timezone.timedelta(days=next_x_days-1)
         filtered_subject_class = SubjectClass.objects.filter(
             class_start_time__date__lte=start, class_end_time__date__gte=end
         )
+        if use_cache:
+            cache.set(cache_key, filtered_subject_class, 60 * 5)
         return filtered_subject_class
 
     def is_in_attendance_window(self):
@@ -256,7 +265,7 @@ class ClassAttendance(models.Model):
     def get_attendance_status_for(cls, student, subject):
         obj = (
             ClassAttendance.objects.filter(student=student, subject=subject)
-            .order_by("creation_time")
+            .select_related("classattendancebybsm", "classattendancewithgeolocation")
         )
         if obj.exists():
             return obj.first().get_attendance_status()

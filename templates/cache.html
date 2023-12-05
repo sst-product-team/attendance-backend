@@ -1,2 +1,7 @@
-<a href="{{ clear_get_current_class_url }}">Clear get current class cache</a>
-<a href="{{ clear_get_current_class_attendance }}">Clear get current class attendance</a>
+<ul>
+    {% for item in data_to_render %}
+        <li>
+        <a href="{{ item.url }}">{{ item.name }}</a>
+        </li>
+    {% endfor %}
+</ul>

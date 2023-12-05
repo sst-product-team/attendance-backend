@@ -15,6 +15,7 @@ urlpatterns = [
         views.getcurclassattendance,
         name="getcurclassattendance",
     ),
+    path("getTodaysClass/", views.getTodaysClass, name="getTodaysClass"),
     path("get_all_attendance/", views.get_all_attendance, name="get_all_attendance"),
     path(
         "cache/",
@@ -27,9 +28,14 @@ urlpatterns = [
                     name="clear_get_current_class",
                 ),
                 path(
-                    "get_current_class_attendance",
+                    "clear_get_current_class_attendance",
                     cache_clear.get_current_class_attendance,
                     name="clear_get_current_class_attendance",
+                ),
+                path(
+                    "clear_get_todays_classs",
+                    cache_clear.get_todays_classs,
+                    name="clear_get_todays_classs",
                 ),
             ]
         ),

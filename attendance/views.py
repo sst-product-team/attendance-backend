@@ -514,3 +514,14 @@ def getTodaysClass(request):
         response.append(details)
 
     return JsonResponse(response, safe=False)
+
+@csrf_exempt
+def get_aggregated_attendance(request):
+    data = json.loads(request.body)
+    token = data["token"]
+
+    student = Student.get_object_with_token(token)
+    response = Student.get_aggregated_attendance(student=student, include_optional=False)
+
+    return JsonResponse(response)
+

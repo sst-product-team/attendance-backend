@@ -1,6 +1,6 @@
 from django.core.cache import cache
 from django.db import models
-from django.db.models import Min, Subquery, OuterRef
+from django.db.models import Count, Subquery, OuterRef
 from django.db.models import F
 from django.utils import timezone
 from enum import Enum
@@ -28,7 +28,7 @@ class Student(models.Model):
     )
     user = models.ForeignKey(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
     fcmtoken = models.CharField(max_length=255, blank=True, null=True)
-    
+
     def get_id_number(self):
         if self.mail.endswith("@scaler.com"):
             return None
@@ -58,13 +58,75 @@ class Student(models.Model):
         user.save()
         return user
 
-    def get_all_attendance(self):
-        return (
-            ClassAttendance.objects.filter(student=self)
-            .select_related("classattendancebybsm", "classattendancewithgeolocation")
-            .all()
+    def get_all_attendance(self, include_optional=False):
+        if include_optional:
+            return (
+                ClassAttendance.objects.filter(student=self)
+                .select_related("classattendancebybsm", "classattendancewithgeolocation")
+            )
+        else:
+           return (
+                ClassAttendance.objects.filter(student=self, subject__is_attendance_mandatory=True)
+                .select_related("classattendancebybsm", "classattendancewithgeolocation")
+            ) 
+    
+    @classmethod
+    def get_aggregated_attendance(cls, attendances=None, student=None, include_optional=False):
+        if student and not attendances:
+            # If only the student is provided, fetch all attendances for the student
+            attendances = student.get_all_attendance(include_optional)
+        elif not include_optional:
+           attendances = attendances.filter(subject__is_attendance_mandatory=True) 
+
+        if not attendances:
+            return {}
+
+        if include_optional:
+            subject_all_classe = SubjectClass.objects.all().annotate(
+                course=F("subject__name")
+            ).annotate(count=Count("id"))
+        else:
+            subject_all_classe = SubjectClass.objects.filter(is_attendance_mandatory=True).annotate(
+                course=F("subject__name")
+            ).values("subject__name").annotate(count=Count("id"))
+        
+
+        # Annotate each attendance with status_by_bsm and status_by_geo
+        annotated_attendances = attendances.annotate(
+            subject_name=F("subject__subject__name"),
+            status_by_bsm=F("classattendancebybsm__status"),
+            status_by_geo=F("classattendancewithgeolocation__status"),
         )
 
+        # Use Case and When to count occurrences of each status combination
+        aggregated_data = (
+            annotated_attendances.values("subject_name", "status_by_bsm", "status_by_geo")
+            .annotate(count=Count("id"))
+        )
+
+        # Create the final aggregated result
+        result = {}
+        for item in aggregated_data:
+            subject_name, status_by_geo, status_by_bsm = item["subject_name"], item["status_by_geo"], item["status_by_bsm"]
+            status_by_geo = ClassAttendanceWithGeoLocation.status_mapping.get(status_by_geo)
+            status_by_bsm = ClassAttendanceByBSM.status_mapping.get(status_by_bsm)
+            status = ClassAttendance.get_attendance_status_by_status(status_by_bsm, status_by_geo).name
+            
+            if subject_name not in result:
+               result[subject_name] = {}
+            
+            if status not in result[subject_name]:
+               result[subject_name][status] = 0 
+            result[subject_name][status] += item["count"]
+        
+        for item in subject_all_classe:
+            # print(item)
+            name, count = item['subject__name'], item['count']
+            if name not in result:
+               result[name] = {} 
+            result[name]['totalClassCount'] = count
+
+        return result
 
 class Subject(models.Model):
     name = models.CharField(max_length=50)
@@ -234,18 +296,20 @@ class ClassAttendance(models.Model):
 
     def get_attendance_status(self):
         by_bsm = self.get_attendance_by_bsm_status()
-
-        if by_bsm == AttendanceStatus.Present:
+        with_geo_location = self.get_attendance_with_geo_location_status()
+        return self.get_attendance_status_by_status(by_bsm, with_geo_location)
+    
+    @classmethod
+    def get_attendance_status_by_status(cls, status_by_bsm, status_by_geo):
+        if status_by_bsm == AttendanceStatus.Present:
             return AttendanceStatus.Present
 
-        if by_bsm == AttendanceStatus.Proxy:
+        if status_by_bsm == AttendanceStatus.Proxy:
             return AttendanceStatus.Proxy
 
-        with_geo_location = self.get_attendance_with_geo_location_status()
-
-        if with_geo_location == AttendanceStatus.Present:
+        if status_by_geo == AttendanceStatus.Present:
             return AttendanceStatus.Present
-        if with_geo_location == AttendanceStatus.Proxy:
+        if status_by_geo == AttendanceStatus.Proxy:
             return AttendanceStatus.Proxy
 
         return AttendanceStatus.Absent
@@ -258,6 +322,11 @@ class ClassAttendanceWithGeoLocation(models.Model):
         ("standby", "Standby"),
         ("flaggers", "Flaggers"),
     ]
+    status_mapping = {
+        "verified": AttendanceStatus.Present,
+        "standby": AttendanceStatus.Present,
+        "proxy": AttendanceStatus.Proxy,
+    }
 
     lat = models.DecimalField(max_digits=13, decimal_places=10)
     lon = models.DecimalField(max_digits=13, decimal_places=10)
@@ -271,12 +340,7 @@ class ClassAttendanceWithGeoLocation(models.Model):
     )
 
     def get_attendance_status(self):
-        status_mapping = {
-            "verified": AttendanceStatus.Present,
-            "standby": AttendanceStatus.Present,
-            "proxy": AttendanceStatus.Proxy,
-        }
-        return status_mapping.get(self.status)
+        return self.status_mapping.get(self.status)
 
     def save(self, *args, **kwargs):
         self.lat = round_coordinates(self.lat)
@@ -308,6 +372,12 @@ class ClassAttendanceByBSM(models.Model):
         ("present", "Present"),
         ("absent", "Absent"),
     ]
+    status_mapping = {
+        "present": AttendanceStatus.Present,
+        "proxy": AttendanceStatus.Proxy,
+        "absent": AttendanceStatus.Absent,
+    }
+
     marked_by = models.ForeignKey(User, on_delete=models.CASCADE)
     class_attendance = models.OneToOneField(ClassAttendance, on_delete=models.CASCADE)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="present")
@@ -318,12 +388,7 @@ class ClassAttendanceByBSM(models.Model):
         )
 
     def get_attendance_status(self):
-        status_mapping = {
-            "present": AttendanceStatus.Present,
-            "proxy": AttendanceStatus.Proxy,
-            "absent": AttendanceStatus.Absent,
-        }
-        return status_mapping.get(self.status)
+        return self.status_mapping.get(self.status)
 
     @classmethod
     def create_with(cls, student, subject, status, marked_by):

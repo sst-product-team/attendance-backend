@@ -147,6 +147,14 @@ class SubjectClass(models.Model):
         cache.set(cache_key, result, 60 * 5)
         return result
 
+    @classmethod
+    def get_classes_for(cls, start=timezone.now().date(), next_x_days=1):
+        end = start+timezone.timedelta(days=next_x_days-1)
+        filtered_subject_class = SubjectClass.objects.filter(
+            class_start_time__date__lte=start, class_end_time__date__gte=end
+        )
+        return filtered_subject_class
+
     def is_in_attendance_window(self):
         current_time = timezone.now()
         return (

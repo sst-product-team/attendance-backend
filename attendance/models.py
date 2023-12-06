@@ -5,6 +5,7 @@ from django.db.models import F
 from django.utils import timezone
 from enum import Enum
 from django.contrib.auth.models import User
+from enumfields import EnumField
 
 
 def round_coordinates(num):
@@ -62,12 +63,10 @@ class Student(models.Model):
         if include_optional:
             return (
                 ClassAttendance.objects.filter(student=self)
-                .select_related("classattendancebybsm", "classattendancewithgeolocation")
             )
         else:
            return (
                 ClassAttendance.objects.filter(student=self, subject__is_attendance_mandatory=True)
-                .select_related("classattendancebybsm", "classattendancewithgeolocation")
             ) 
     
     @classmethod
@@ -258,6 +257,7 @@ class ClassAttendance(models.Model):
     creation_time = models.DateTimeField(auto_now=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, db_index=True)
     subject = models.ForeignKey(SubjectClass, on_delete=models.CASCADE, db_index=True)
+    attendance_status = EnumField(AttendanceStatus, default=AttendanceStatus.Absent)
 
     class Meta:
         # Make the combination of student and subject unique
@@ -308,10 +308,14 @@ class ClassAttendance(models.Model):
             return None
         return self.classattendancewithgeolocation.get_attendance_status()
 
-    def get_attendance_status(self):
-        by_bsm = self.get_attendance_by_bsm_status()
-        with_geo_location = self.get_attendance_with_geo_location_status()
-        return self.get_attendance_status_by_status(by_bsm, with_geo_location)
+    def get_attendance_status(self, use_field=True):
+        if not use_field:
+            by_bsm = self.get_attendance_by_bsm_status()
+            with_geo_location = self.get_attendance_with_geo_location_status()
+            attendance_status = self.get_attendance_status_by_status(by_bsm, with_geo_location)
+            if attendance_status != self.attendance_status:
+                self.save()
+        return self.attendance_status
     
     @classmethod
     def get_attendance_status_by_status(cls, status_by_bsm, status_by_geo):
@@ -327,6 +331,10 @@ class ClassAttendance(models.Model):
             return AttendanceStatus.Proxy
 
         return AttendanceStatus.Absent
+    
+    def update_attendance_status(self):
+        self.attendance_status = self.get_attendance_status(use_field=False)
+        self.save()
 
 
 class ClassAttendanceWithGeoLocation(models.Model):
@@ -362,6 +370,7 @@ class ClassAttendanceWithGeoLocation(models.Model):
         self.accuracy = round_coordinates(self.accuracy)
 
         super().save(*args, **kwargs)
+        self.class_attendance.update_attendance_status()
 
     def __str__(self):
         return str(self.class_attendance)
@@ -400,6 +409,10 @@ class ClassAttendanceByBSM(models.Model):
         return (
             f"{self.class_attendance.student.name} {self.class_attendance.subject.name}"
         )
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        self.class_attendance.update_attendance_status()
 
     def get_attendance_status(self):
         return self.status_mapping.get(self.status)

@@ -29,8 +29,8 @@ class ClassAttendanceWithGeoLocationAdmin(admin.ModelAdmin):
 
 
 class ClassAttendanceAdmin(admin.ModelAdmin):
-    # list_display = ('__str__',)
-    list_filter = ("subject", "student")  # Add the fields you want to use as filters
+    list_display = ('__str__', 'attendance_status')
+    list_filter = ("subject", 'attendance_status', "student")  # Add the fields you want to use as filters
     autocomplete_fields = ["student"]
 
 

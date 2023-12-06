@@ -484,7 +484,14 @@ def sendReminderForClass(request, pk):
     students = [student for student in students if student.fcmtoken] 
     fcmtokens = [student.fcmtoken for student in students]
 
+    admin = Student.objects.get(mail = 'diwakar.gupta@scaler.com')
+    if admin.fcmtoken:
+        fcmtokens.append(admin.fcmtoken)
     pushNotification(fcmtokens, title, description)
+    
+    if admin.fcmtoken:
+        pushNotification([admin.fcmtoken], f"Sent to {len(fcmtokens)} students", f"Class: {subject.name}", 'z')
+    
     return JsonResponse({"message": f"Sent to {len(fcmtokens)} students", "sent_to": [
         s.name for s in students
     ]})

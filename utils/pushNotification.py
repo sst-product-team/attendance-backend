@@ -7,5 +7,5 @@ if settings.FIREBASE_SERVICE_ACCOUNT_CREDENTIAL:
 else:
     notifier = None 
 
-def pushNotification(fcmtokens, title, description):
-    notifier.notify(title, description, fcmtokens, 'title')
+def pushNotification(fcmtokens, title, description, tag='attendance_reminder'):
+    notifier.notify(title, description, fcmtokens, tag)

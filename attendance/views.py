@@ -489,9 +489,6 @@ def sendReminderForClass(request, pk):
         fcmtokens.append(admin.fcmtoken)
     pushNotification(fcmtokens, title, description)
     
-    if admin.fcmtoken:
-        pushNotification([admin.fcmtoken], f"Sent to {len(fcmtokens)} students", f"Class: {subject.name}", 'z')
-    
     return JsonResponse({"message": f"Sent to {len(fcmtokens)} students", "sent_to": [
         s.name for s in students
     ]})

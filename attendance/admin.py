@@ -31,6 +31,7 @@ class ClassAttendanceWithGeoLocationAdmin(admin.ModelAdmin):
 class ClassAttendanceAdmin(admin.ModelAdmin):
     # list_display = ('__str__',)
     list_filter = ("subject", "student")  # Add the fields you want to use as filters
+    autocomplete_fields = ["student"]
 
 
 class FalseAttemptAdmin(admin.ModelAdmin):
@@ -49,6 +50,7 @@ class ClassAttendanceByBSMAdmin(admin.ModelAdmin):
 
 class StudentAdmin(admin.ModelAdmin):
     list_display = ("name", "mail", "show_attendance", "send_notification")
+    search_fields = ["name", "mail"]
 
     def show_attendance(self, obj):
         from django.utils.html import format_html
@@ -78,6 +80,7 @@ class SubjectClassAdmin(admin.ModelAdmin):
         "send_reminder"
     )
     save_as = True
+    search_fields = ["name"]
 
     def mark_attendance(self, obj):
         from django.utils.html import format_html

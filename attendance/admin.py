@@ -77,6 +77,7 @@ class SubjectClassAdmin(admin.ModelAdmin):
         "mark_attendance",
         "send_reminder"
     )
+    save_as = True
 
     def mark_attendance(self, obj):
         from django.utils.html import format_html

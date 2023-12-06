@@ -106,8 +106,11 @@ class Student(models.Model):
 
         # Create the final aggregated result
         result = {}
+        uncategorised = "uncategorised"
         for item in aggregated_data:
             subject_name, status_by_geo, status_by_bsm = item["subject_name"], item["status_by_geo"], item["status_by_bsm"]
+            if not subject_name:
+                subject_name = uncategorised
             status_by_geo = ClassAttendanceWithGeoLocation.status_mapping.get(status_by_geo)
             status_by_bsm = ClassAttendanceByBSM.status_mapping.get(status_by_bsm)
             status = ClassAttendance.get_attendance_status_by_status(status_by_bsm, status_by_geo).name
@@ -122,6 +125,8 @@ class Student(models.Model):
         for item in subject_all_classe:
             # print(item)
             name, count = item['subject__name'], item['count']
+            if not name:
+                name = uncategorised
             if name not in result:
                result[name] = {} 
             result[name]['totalClassCount'] = count

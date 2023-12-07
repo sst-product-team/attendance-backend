@@ -213,7 +213,7 @@ def get_all_attendance(request):
     return JsonResponse(all_attendances, safe=False)
 
 
-def fetchLatestAttendances(request , current_class):
+def fetchLatestAttendances( current_class):
     if not current_class:
         return JsonResponse(None, safe=False)
 
@@ -240,7 +240,6 @@ def fetchLatestAttendances(request , current_class):
     response = {}
     response["current_class"] = details
     response["all_attendance"] = json_attendance
-    response["can_mark_attendance"] = can_mark_attendance(request).content.decode("utf-8") == "true"
 
     all_students = Student.get_all_students()
 
@@ -389,10 +388,14 @@ def getAttendance(request, pk):
             return JsonResponse(result, safe=False)
 
     query_class = SubjectClass.objects.get(pk=pk)
-    response = fetchLatestAttendances(request,query_class)
+    response = fetchLatestAttendances(query_class)
 
     if (not request.user.is_staff) or (cache.get(cache_key) != None):
         cache.set(cache_key, response, 60 * 5)
+
+    response["can_mark_attendance"] = request.user.is_staff
+    result = cache.get(cache_key)    
+
     return JsonResponse(response, safe=False)
 
 

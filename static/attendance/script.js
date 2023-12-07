@@ -33,16 +33,6 @@ async function markAttendance(mail, status) {
   }
 }
 
-async function isStaff() {
-  try {
-    const response = await fetch("/attendance/can_mark_attendance/");
-    const jsonData = await response.json();
-    return jsonData;
-  } catch (error) {
-    console.error("Error fetching JSON data:", error);
-    return [];
-  }
-}
 
 // Function to populate the table
 async function populateTable() {
@@ -51,7 +41,9 @@ async function populateTable() {
 
   // Fetch JSON data
   const jsonData = await fetchJSONData();
-  const canMarkAttendance = await isStaff();
+  const canMarkAttendance = await jsonData["can_mark_attendance"];
+
+  console.log(jsonData);
 
   // Clear existing rows
   tableBody.innerHTML = "";

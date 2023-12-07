@@ -1,6 +1,6 @@
 from django.core.cache import cache
 from django.db import models
-from django.db.models import Count, Subquery, OuterRef
+from django.db.models import Count, Case, When, Value, IntegerField
 from django.db.models import F
 from django.utils import timezone
 from enum import Enum
@@ -160,27 +160,20 @@ class SubjectClass(models.Model):
     
     def get_all_students_attendance_status(self):
         students_with_attendance = (
-            Student.get_all_students()
-            .annotate(
-                attendance_id=Subquery(
-                    ClassAttendance.objects.filter(
-                        student=OuterRef('pk'),
-                        subject=self
-                    ).values('id')[:1]
+            Student.get_all_students().annotate(
+                attendance_status=Case(
+                    When(classattendance__subject=self, then='classattendance__attendance_status'),
+                    default=Value(AttendanceStatus.Absent.value),
+                    output_field=IntegerField()
                 )
             )
         )
 
         result = []
         for student in students_with_attendance:
-            attendance_id = student.attendance_id
+            attendance_status = student.attendance_status
 
-            if attendance_id is not None:
-                attendance = ClassAttendance(id=attendance_id).get_attendance_status()
-            else:
-                attendance = AttendanceStatus.Absent
-
-            result.append((student, attendance))
+            result.append((student, AttendanceStatus(attendance_status)))
 
         return result
 
@@ -268,35 +261,11 @@ class ClassAttendance(models.Model):
 
     @classmethod
     def get_attendance_status_for(cls, student, subject):
-        obj = (
-            ClassAttendance.objects.filter(student=student, subject=subject)
-            .select_related("classattendancebybsm", "classattendancewithgeolocation")
-        )
+        obj = ClassAttendance.objects.filter(student=student, subject=subject)
         if obj.exists():
             return obj.first().get_attendance_status()
         else:
             return AttendanceStatus.Absent
-
-    @classmethod
-    def all_subject_attendance(cls, student):
-        from django.db.models import Min, OuterRef, Subquery
-
-        min_creation_time_subquery = (
-            ClassAttendance.objects.filter(student=student, subject=OuterRef("pk"))
-            .values("subject")
-            .annotate(min_creation_time=Min("creation_time"))
-            .values("min_creation_time")
-        )
-
-        subject_classes_with_attendance = SubjectClass.objects.annotate(
-            min_creation_time=Subquery(min_creation_time_subquery)
-        ).values("name", "start_time", "end_time", "min_creation_time")
-
-        return subject_classes_with_attendance
-
-    # @classmethod
-    # def get_all_student_attendance(cls, student):
-    #     return ClassAttendance.objects.filter(student=student).values("subject").annotate(min_creation_time=Min('creation_time')).all()
 
     def get_attendance_by_bsm_status(self):
         if not hasattr(self, "classattendancebybsm"):

@@ -281,9 +281,8 @@ class ClassAttendance(models.Model):
         if not use_field:
             by_bsm = self.get_attendance_by_bsm_status()
             with_geo_location = self.get_attendance_with_geo_location_status()
-            attendance_status = self.get_attendance_status_by_status(by_bsm, with_geo_location)
-            if attendance_status != self.attendance_status:
-                self.save()
+            attendance_status = ClassAttendance.get_attendance_status_by_status(by_bsm, with_geo_location)
+            return attendance_status
         return self.attendance_status
     
     @classmethod

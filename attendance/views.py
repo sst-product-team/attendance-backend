@@ -192,27 +192,6 @@ def geo(request):
     return JsonResponse({})
 
 
-@csrf_exempt
-def get_all_attendance(request):
-    data = json.loads(request.body)
-    token = data["token"]
-
-    student = Student.get_object_with_token(token)
-    all_attendances_obj = ClassAttendance.all_subject_attendance(student)
-
-    all_attendances = []
-    for subject_class in all_attendances_obj:
-        details = {}
-        details["name"] = subject_class["name"]
-        details["class_start_time"] = subject_class["class_start_time"]
-        details["class_end_time"] = subject_class["class_end_time"]
-        details["attendance_time"] = subject_class["min_creation_time"]
-        # print(f"Subject: {name}, Start Time: {start_time}, End Time: {end_time}, Min Creation Time: {min_creation_time}")
-        all_attendances.append(details)
-
-    return JsonResponse(all_attendances, safe=False)
-
-
 def fetchLatestAttendances(current_class):
     if not current_class:
         return JsonResponse(None, safe=False)
@@ -254,22 +233,6 @@ def fetchLatestAttendances(current_class):
             )
     return response
 
-
-def get_current_class_attendance(request):
-    cache_key = "get_current_class_attendance"
-
-    if not request.user.is_staff:
-        result = cache.get(cache_key)
-        if result is not None:
-            return JsonResponse(result, safe=False)
-
-    current_class = SubjectClass.get_current_class()
-    response = fetchLatestAttendances(current_class)
-    cache.set(cache_key, response, 60 * 5)
-
-    return JsonResponse(response, safe=False)
-
-
 @csrf_exempt
 def getcurclassattendance(request):
     data = json.loads(request.body)
@@ -309,41 +272,6 @@ def injest_to_scaler(request, pk):
 
 def can_mark_attendance(request):
     return JsonResponse(request.user.is_staff, safe=False)
-
-
-@csrf_exempt
-def mark_attendance(request):
-    if not request.user.is_staff:
-        return JsonResponse(
-            {
-                "message": "You are not authorized to access this page",
-                "status": "error",
-            },
-            status=403,
-        )
-
-    curr_class = SubjectClass.get_current_class()
-    if curr_class == None:
-        return JsonResponse({}, status=400)
-
-    data = json.loads(request.body)
-    mail = data["mail"]
-    status = data["status"]
-
-    student = Student.objects.get(mail=mail)
-
-    attendance = ClassAttendanceByBSM.create_with(
-        student, curr_class, status, request.user
-    )
-    attendance.save()
-
-    return JsonResponse(
-        {
-            "mail": mail,
-            "status": attendance.class_attendance.get_attendance_status().name,
-        }
-    )
-
 
 @csrf_exempt
 def mark_attendance_subject(request, pk):
@@ -412,7 +340,7 @@ def getAttendanceView(request, pk):
 
 
 def studentAttendance(request, mail_prefix):
-    student = Student.objects.get(mail=mail_prefix + "@sst.scaler.com")
+    student = Student.objects.get(mail__startswith=mail_prefix+"@")
     response = fetchAllStudentAttendances(student)
     for a in response['all_attendance']:
         if not a['status']:

@@ -43,7 +43,7 @@ urlpatterns = [
         "getAttendanceView/<int:pk>/", views.getAttendanceView, name="getAttendanceView"
     ),
     
-    # path("studentAttendance/<str:mail_prefix>/",views.studentAttendance,name="studentAttendance"),
+    path("studentAttendance/<str:mail_prefix>/",views.studentAttendance,name="studentAttendance"),
     path("sendNotification/<int:pk>/", views.sendNotification, name="sendNotification"),
     path("sendReminderForClass/<int:pk>/", views.sendReminderForClass, name="sendReminderForClass"),
     path("get_aggregated_attendance/", views.get_aggregated_attendance, name="get_aggregated_attendance"),

@@ -30,6 +30,10 @@ class Student(models.Model):
     user = models.ForeignKey(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
     fcmtoken = models.CharField(max_length=255, blank=True, null=True)
 
+    @classmethod
+    def can_mark_attendance(cls, request):
+        return request.user.has_perm('can_mark_attendance')
+
     def get_id_number(self):
         if self.mail.endswith("@scaler.com"):
             return None
@@ -131,6 +135,7 @@ class Student(models.Model):
             result[name]['totalClassCount'] = count
 
         return result
+
 
 class Subject(models.Model):
     name = models.CharField(max_length=50)
@@ -255,6 +260,10 @@ class ClassAttendance(models.Model):
     class Meta:
         # Make the combination of student and subject unique
         unique_together = ("student", "subject")
+        permissions = [
+            ("can_mark_attendance", "Can Mark Attendance"),
+        ]
+
 
     def __str__(self):
         return self.student.mail + " " + self.subject.name

@@ -270,12 +270,9 @@ def injest_to_scaler(request, pk):
     return JsonResponse({"PK": pk})
 
 
-def can_mark_attendance(request):
-    return JsonResponse(request.user.is_staff, safe=False)
-
 @csrf_exempt
 def mark_attendance_subject(request, pk):
-    if not request.user.is_staff:
+    if Student.can_mark_attendance(request):
         return JsonResponse(
             {
                 "message": "You are not authorized to access this page",
@@ -313,7 +310,7 @@ def getAttendance(request, pk):
     if not request.user.is_staff:
         result = cache.get(cache_key)
         if result is not None:
-            result["can_mark_attendance"] = request.user.is_staff
+            result["can_mark_attendance"] = Student.can_mark_attendance(request)
             return JsonResponse(result, safe=False)
 
     query_class = SubjectClass.objects.get(pk=pk)
@@ -322,7 +319,7 @@ def getAttendance(request, pk):
     if (not request.user.is_staff) or (cache.get(cache_key) != None):
         cache.set(cache_key, response, 60 * 5)
 
-    response["can_mark_attendance"] = request.user.is_staff
+    response["can_mark_attendance"] = Student.can_mark_attendance(request)
 
     return JsonResponse(response, safe=False)
 

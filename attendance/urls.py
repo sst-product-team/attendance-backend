@@ -36,7 +36,6 @@ urlpatterns = [
         ),
     ),
     
-    path("can_mark_attendance/", views.can_mark_attendance, name="can_mark_attendance"),
     path("mark_attendance/<int:pk>/",views.mark_attendance_subject,name="mark_attendance_subject"),
     path("getAttendance/<int:pk>/", views.getAttendance, name="getAttendance"),
     path(

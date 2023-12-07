@@ -385,6 +385,7 @@ def getAttendance(request, pk):
     if not request.user.is_staff:
         result = cache.get(cache_key)
         if result is not None:
+            result["can_mark_attendance"] = request.user.is_staff
             return JsonResponse(result, safe=False)
 
     query_class = SubjectClass.objects.get(pk=pk)
@@ -394,7 +395,6 @@ def getAttendance(request, pk):
         cache.set(cache_key, response, 60 * 5)
 
     response["can_mark_attendance"] = request.user.is_staff
-    result = cache.get(cache_key)    
 
     return JsonResponse(response, safe=False)
 

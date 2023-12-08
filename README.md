@@ -17,3 +17,14 @@ docker run --network=host attendance-backend
 Now you can access the server at `http://localhost:8000`
 
 if anything is missed visit [docker-cheetsheet](https://docs.docker.com/get-started/docker_cheatsheet.pdf)
+
+## To run test file
+
+### To run all test
+```bash
+python manage.py test attendance.tests
+```
+### To run a specific testfile
+```bash
+python manage.py test attendance.tests.models.ClassAttendanceWithGeoLocationTest
+```

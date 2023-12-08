@@ -106,6 +106,14 @@ class SubjectClassAdmin(admin.ModelAdmin):
             reverse("sendReminderForClass", args=[obj.pk]),
         )
 
+    def has_change_permission(self, request, obj=None):
+        from django.utils import timezone
+        current_time = timezone.now()
+
+        if obj is not None and obj.class_end_time < current_time and not request.user.is_superuser:
+            return False
+        return super().has_change_permission(request, obj=obj)
+
 
 admin.site.register(ClassAttendanceByBSM, ClassAttendanceByBSMAdmin)
 admin.site.register(Student, StudentAdmin)

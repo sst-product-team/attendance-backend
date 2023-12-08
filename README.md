@@ -1,7 +1,7 @@
 # attendance-backend
 
 
-# Setup
+## Setup
 
 ### To build an image.
 ```bash

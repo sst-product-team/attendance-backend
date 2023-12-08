@@ -21,9 +21,9 @@ if anything is missed visit [docker-cheetsheet](https://docs.docker.com/get-star
 
 ### To run all test
 ```bash
-python manage.py test attendance.tests
+python manage.py test
 ```
 ### To run a specific testfile
 ```bash
-python manage.py test attendance.tests.models.ClassAttendanceWithGeoLocationTest
+python manage.py test attendance.test.models.test_classattendancewithgeolocationTest
 ```

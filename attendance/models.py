@@ -32,7 +32,7 @@ class Student(models.Model):
 
     @classmethod
     def can_mark_attendance(cls, request):
-        return request.user.has_perm('can_mark_attendance')
+        return request.user.has_perm('attendance.can_mark_attendance')
 
     def get_id_number(self):
         if self.mail.endswith("@scaler.com"):

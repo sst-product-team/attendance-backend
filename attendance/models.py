@@ -33,7 +33,11 @@ class Student(models.Model):
     @classmethod
     def can_mark_attendance(cls, request):
         return request.user.has_perm('attendance.can_mark_attendance')
-
+   
+    @classmethod
+    def can_send_notifications(cls, request):
+        return request.user.has_perm('attendance.can_send_notifications')
+   
     def get_id_number(self):
         if self.mail.endswith("@scaler.com"):
             return None
@@ -265,6 +269,7 @@ class ClassAttendance(models.Model):
         unique_together = ("student", "subject")
         permissions = [
             ("can_mark_attendance", "Can Mark Attendance"),
+            ("can_send_notifications", "Can Send Notifications"),
         ]
 
 

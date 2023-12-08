@@ -394,7 +394,7 @@ title = "Attendance lagaya kya? 🧐"
 description = "Lagao jaldi 🤬"
 
 def sendNotification(request, pk):
-    if not request.user.is_superuser:
+    if not Student.can_send_notifications(request):
         return JsonResponse({"message": "Forbidden"}, status=400)
     student = Student.objects.get(pk = pk)
     if not student.fcmtoken:
@@ -404,7 +404,7 @@ def sendNotification(request, pk):
     return JsonResponse({"message": "sent"})
 
 def sendReminderForClass(request, pk):
-    if not request.user.is_superuser:
+    if not Student.can_send_notifications(request):
         return JsonResponse({"message": "Forbidden"}, status=400)
      
     subject = SubjectClass.objects.get(pk = pk)

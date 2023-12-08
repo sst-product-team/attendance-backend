@@ -272,7 +272,7 @@ def injest_to_scaler(request, pk):
 
 @csrf_exempt
 def mark_attendance_subject(request, pk):
-    if Student.can_mark_attendance(request):
+    if not Student.can_mark_attendance(request):
         return JsonResponse(
             {
                 "message": "You are not authorized to access this page",

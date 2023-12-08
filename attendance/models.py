@@ -164,23 +164,26 @@ class SubjectClass(models.Model):
         )
     
     def get_all_students_attendance_status(self):
-        students_with_attendance = (
-            Student.get_all_students().annotate(
-                attendance_status=Case(
-                    When(classattendance__subject=self, then='classattendance__attendance_status'),
-                    default=Value(AttendanceStatus.Absent.value),
-                    output_field=IntegerField()
-                )
+
+        allClassAttendance = self.get_all_attendance()
+
+        json_attendance = []
+        mail_set = set()
+        for attendance in allClassAttendance:
+            json_attendance.append(
+                (attendance.student, attendance.attendance_status)
             )
-        )
+            mail_set.add(attendance.student.mail)
+        
+        all_students = Student.get_all_students()
 
-        result = []
-        for student in students_with_attendance:
-            attendance_status = student.attendance_status
+        for student in all_students:
+            if student.mail not in mail_set:
+                json_attendance.append(
+                    (student, AttendanceStatus.Absent)
+                )
 
-            result.append((student, AttendanceStatus(attendance_status)))
-
-        return result
+        return json_attendance
 
     @classmethod
     def get_current_class(cls):

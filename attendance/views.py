@@ -332,7 +332,6 @@ def getAttendanceView(request, pk):
     else:
         getAttendanceURL = None
         markAttendanceURL = None
-        canMarkAttendance = reverse("can_mark_attendance")
         noclass = True
     return render(
         request,

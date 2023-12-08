@@ -24,7 +24,7 @@ from utils.pushNotification import pushNotification
 def version(request):
     config = ProjectConfiguration.get_config()
     return JsonResponse(
-        {"version": config.APP_LATEST_VERSION, "APK_FILE": config.APK_FILE}
+        {"version": config.APP_LATEST_VERSION, "APK_FILE": config.APK_FILE, "VERSION_NAME": config.VERSION_NAME}
     )
 
 

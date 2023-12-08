@@ -455,6 +455,7 @@ class FalseAttemptGeoLocation(models.Model):
 class ProjectConfiguration(models.Model):
     APP_LATEST_VERSION = models.CharField(max_length=12)
     APK_FILE = models.TextField()
+    VERSION_NAME = models.CharField(max_length=20, default="")
 
     def save(self, *args, **kwargs):
         # Override save to ensure only one instance is saved

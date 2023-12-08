@@ -40,7 +40,7 @@ def index(request):
         "accuracy" not in data
         or "version" not in data
         or compare_versions(
-            data["version"], ProjectConfiguration.get_config().APP_LATEST_VERSION
+            data["version"], ProjectConfiguration.get_config().MIN_SUPPORTED_APP_VERSION
         )
         < 0
     ):

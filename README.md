@@ -1,15 +1,14 @@
 # attendance-backend
 
 
-# How to work with docker images and containers.
+# Setup
 
-## To build an image.
-
+### To build an image.
 ```bash
 docker build -t attendance-backend .
 ```
 
-## To run the container and listen on localhost.
+### To run the container and listen on localhost.
 ```bash
 docker run --network=host attendance-backend
 ```

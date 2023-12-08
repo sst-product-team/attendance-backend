@@ -8,6 +8,7 @@ charset-normalizer==3.3.2
 cryptography==41.0.7
 dj-database-url==1.2.0
 Django==4.2.7
+djangorestframework==3.14.0
 firebase-admin==6.2.0
 google-api-core==2.14.0
 google-api-python-client==2.109.0
@@ -45,3 +46,4 @@ typing_extensions==4.8.0
 uritemplate==4.1.1
 urllib3==2.1.0
 whitenoise==6.6.0
+

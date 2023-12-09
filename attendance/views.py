@@ -458,3 +458,10 @@ def get_aggregated_attendance(request):
 
     return JsonResponse(response)
 
+def verify_false_attempt(request, pk):
+    if not Student.can_verify_false_attempt(request):
+        return JsonResponse({"message": "Forbidden"}, status=400)
+    
+    false_attempt = FalseAttemptGeoLocation.objects.get(pk = pk)
+    ClassAttendanceWithGeoLocation.create_from(false_attempt, request.user)
+    return JsonResponse({"message": "ok"})

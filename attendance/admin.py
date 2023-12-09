@@ -35,7 +35,16 @@ class ClassAttendanceAdmin(admin.ModelAdmin):
 
 
 class FalseAttemptAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'verify')
     list_filter = ("subject", "student")  # Add the fields you want to use as filters
+
+    def verify(self, obj):
+        from django.utils.html import format_html
+
+        return format_html(
+            '<a class="button" target="_blank" href="{}">Verify</a>',
+            reverse("verify_false_attempt", args=[obj.pk]),
+        )
 
 
 class ClassAttendanceByBSMAdmin(admin.ModelAdmin):

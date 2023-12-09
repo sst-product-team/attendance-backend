@@ -38,6 +38,10 @@ class Student(models.Model):
     def can_send_notifications(cls, request):
         return request.user.has_perm('attendance.can_send_notifications')
    
+    @classmethod
+    def can_verify_false_attempt(cls, request):
+        return request.user.has_perm('attendance.verify_false_attempt')
+   
     def get_id_number(self):
         if self.mail.endswith("@scaler.com"):
             return None
@@ -270,6 +274,7 @@ class ClassAttendance(models.Model):
         permissions = [
             ("can_mark_attendance", "Can Mark Attendance"),
             ("can_send_notifications", "Can Send Notifications"),
+            ("verify_false_attempt", "Verify False Attempt GeoLocation"),
         ]
 
 
@@ -322,7 +327,22 @@ class ClassAttendance(models.Model):
         self.save()
 
 
+class ClassAttendanceChildManager(models.QuerySet):
+
+    def save(self, *args, **kwargs):
+        for obj in self:
+            obj.save()
+        super(ClassAttendanceChildManager, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        for obj in self:
+            obj.delete()
+        super(ClassAttendanceChildManager, self).delete(*args, **kwargs)
+
+
 class ClassAttendanceWithGeoLocation(models.Model):
+    objects = ClassAttendanceChildManager.as_manager()
+
     STATUS_CHOICES = [
         ("proxy", "Proxy"),
         ("verified", "Verified"),
@@ -345,6 +365,7 @@ class ClassAttendanceWithGeoLocation(models.Model):
         default="standby",  # Set the default value if needed
         db_index=True,
     )
+    verified_by = models.ForeignKey(User, on_delete=models.SET_NULL, default=None, blank=True, null=True)
 
     def get_attendance_status(self):
         return self.status_mapping.get(self.status)
@@ -356,25 +377,47 @@ class ClassAttendanceWithGeoLocation(models.Model):
 
         super().save(*args, **kwargs)
         self.class_attendance.update_attendance_status()
+    
+    def delete(self, *args, **kwargs):
+        class_attendance__pk = self.class_attendance.pk
+        super().delete(*args, **kwargs)
+        ClassAttendance.objects.get(pk = class_attendance__pk).update_attendance_status()
 
     def __str__(self):
         return str(self.class_attendance)
 
     @classmethod
-    def create_with(cls, student, subject, lat, lon, accuracy):
-        class_attendance, is_created = ClassAttendance.objects.get_or_create(
+    def create_with(cls, student, subject, lat, lon, accuracy, return_obj=False):
+        class_attendance, _ = ClassAttendance.objects.get_or_create(
             student=student, subject=subject
         )
 
-        attendance, is_created = ClassAttendanceWithGeoLocation.objects.get_or_create(
+        attendance, _ = ClassAttendanceWithGeoLocation.objects.get_or_create(
             class_attendance=class_attendance,
            defaults={"lat": lat, "lon": lon, "accuracy": accuracy}, 
         )
         attendance.save()
+        if return_obj:
+            return (class_attendance, attendance)
         return class_attendance
+
+    @classmethod
+    def create_from(cls, false_attempt, verified_by):
+        _, obj = cls.create_with(
+            false_attempt.student,
+            false_attempt.subject,
+            false_attempt.lat,
+            false_attempt.lon,
+            false_attempt.accuracy,
+            return_obj=True
+        )
+        obj.status = "verified"
+        obj.verified_by = verified_by
+        obj.save()
 
 
 class ClassAttendanceByBSM(models.Model):
+    objects = ClassAttendanceChildManager.as_manager()
     STATUS_CHOICES = [
         ("proxy", "Proxy"),
         ("present", "Present"),
@@ -398,6 +441,11 @@ class ClassAttendanceByBSM(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         self.class_attendance.update_attendance_status()
+    
+    def delete(self, *args, **kwargs):
+        class_attendance__pk = self.class_attendance.pk
+        super().delete(*args, **kwargs)
+        ClassAttendance.objects.get(pk = class_attendance__pk).update_attendance_status()
 
     def get_attendance_status(self):
         return self.status_mapping.get(self.status)
@@ -449,7 +497,7 @@ class FalseAttemptGeoLocation(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return str(self.student.mail)
+        return f"{self.subject.name}: {self.student.mail.split('@')[0]}"
 
 
 class ProjectConfiguration(models.Model):

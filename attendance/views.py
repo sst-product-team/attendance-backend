@@ -1,5 +1,5 @@
 from django.core.cache import cache
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from attendance.models import (
     SubjectClass,
     Student,
@@ -24,7 +24,11 @@ from utils.pushNotification import pushNotification
 def version(request):
     config = ProjectConfiguration.get_config()
     return JsonResponse(
-        {"version": config.APP_LATEST_VERSION, "APK_FILE": config.APK_FILE, "VERSION_NAME": config.VERSION_NAME}
+        {
+            "version": config.APP_LATEST_VERSION,
+            "APK_FILE": config.APK_FILE,
+            "VERSION_NAME": config.VERSION_NAME,
+        }
     )
 
 
@@ -59,13 +63,11 @@ def index(request):
 
     student = Student.objects.get(token=token)
     curr_class = SubjectClass.get_current_class()
-    if curr_class == None:
+    if curr_class is None:
         return JsonResponse({"message": "No class active for attendance"}, status=400)
     if not curr_class.is_attendance_by_geo_location_enabled:
         return JsonResponse(
-            {
-                "message": "Attendance can only be marked by BSM's for this class"
-            },
+            {"message": "Attendance can only be marked by BSM's for this class"},
             status=400,
         )
     if not curr_class.is_in_attendance_window():
@@ -80,20 +82,36 @@ def index(request):
         )
 
     if is_in_class(lat, lon, accuracy):
-        if ClassAttendance.get_attendance_status_for(student=student, subject=curr_class) == AttendanceStatus.Present:
+        if (
+            ClassAttendance.get_attendance_status_for(
+                student=student, subject=curr_class
+            )
+            == AttendanceStatus.Present
+        ):
             return JsonResponse(
-                {"message": "Your attendance is already marked", "class": curr_class.name, "time": curr_class.attendance_start_time}
+                {
+                    "message": "Your attendance is already marked",
+                    "class": curr_class.name,
+                    "time": curr_class.attendance_start_time,
+                }
             )
         attendance = ClassAttendanceWithGeoLocation.create_with(
             student, curr_class, lat, lon, accuracy
         )
         if attendance.get_attendance_status() == AttendanceStatus.Present:
             return JsonResponse(
-                {"message": "Your attendance has been marked", "class": curr_class.name, "time": curr_class.attendance_start_time}
+                {
+                    "message": "Your attendance has been marked",
+                    "class": curr_class.name,
+                    "time": curr_class.attendance_start_time,
+                }
             )
         else:
             return JsonResponse(
-                {"message": "Your attendance will be verified by BSM", "status":"info",}
+                {
+                    "message": "Your attendance will be verified by BSM",
+                    "status": "info",
+                }
             )
     else:
         FalseAttemptGeoLocation.objects.create(
@@ -117,7 +135,7 @@ def register(request):
     if "fcmtoken" in data:
         details["fcmtoken"] = data["fcmtoken"]
     else:
-       details["fcmtoken"] = None 
+        details["fcmtoken"] = None
     data = decode_jwt_token(data["jwtToken"])
 
     if "error" in data:
@@ -141,8 +159,8 @@ def register(request):
         if not user_obj.name:
             user_obj.name = details["name"]
             user_obj.save()
-        
-        if  details["fcmtoken"] != None:
+
+        if details["fcmtoken"] is not None:
             user_obj.fcmtoken = details["fcmtoken"]
             user_obj.save()
 
@@ -161,7 +179,10 @@ def register(request):
             )
     else:
         student = Student.objects.create(
-            name=details["name"], mail=details["mail"], token=details["token"], fcmtoken=details["fcmtoken"]
+            name=details["name"],
+            mail=details["mail"],
+            token=details["token"],
+            fcmtoken=details["fcmtoken"],
         )
         student.save()
 
@@ -233,13 +254,14 @@ def fetchLatestAttendances(current_class):
             )
     return response
 
+
 @csrf_exempt
 def getcurclassattendance(request):
     data = json.loads(request.body)
     token = data["token"]
 
     curr_class = SubjectClass.get_current_class()
-    if curr_class == None:
+    if curr_class is None:
         return JsonResponse(None, safe=False)
 
     details = {}
@@ -250,7 +272,9 @@ def getcurclassattendance(request):
     details["attendance_end_time"] = curr_class.attendance_end_time
 
     student = Student.get_object_with_token(token)
-    attendance_status = ClassAttendance.get_attendance_status_for(student, curr_class).name
+    attendance_status = ClassAttendance.get_attendance_status_for(
+        student, curr_class
+    ).name
 
     details["attendance_status"] = attendance_status
 
@@ -282,7 +306,7 @@ def mark_attendance_subject(request, pk):
         )
 
     curr_class = SubjectClass.objects.get(pk=pk)
-    if curr_class == None:
+    if curr_class is None:
         return JsonResponse({}, status=400)
 
     data = json.loads(request.body)
@@ -316,7 +340,7 @@ def getAttendance(request, pk):
     query_class = SubjectClass.objects.get(pk=pk)
     response = fetchLatestAttendances(query_class)
 
-    if (not request.user.is_staff) or (cache.get(cache_key) != None):
+    if (not request.user.is_staff) or (cache.get(cache_key) is not None):
         cache.set(cache_key, response, 60 * 5)
 
     response["can_mark_attendance"] = Student.can_mark_attendance(request)
@@ -336,16 +360,20 @@ def getAttendanceView(request, pk):
     return render(
         request,
         "attendance/index.html",
-        {"markAttendanceURL": markAttendanceURL, "getAttendanceURL": getAttendanceURL, "noclass": noclass},
+        {
+            "markAttendanceURL": markAttendanceURL,
+            "getAttendanceURL": getAttendanceURL,
+            "noclass": noclass,
+        },
     )
 
 
 def studentAttendance(request, mail_prefix):
-    student = Student.objects.get(mail__startswith=mail_prefix+"@")
+    student = Student.objects.get(mail__startswith=mail_prefix + "@")
     response = fetchAllStudentAttendances(student)
-    for a in response['all_attendance']:
-        if not a['status']:
-           a['status'] = AttendanceStatus.Absent.name 
+    for a in response["all_attendance"]:
+        if not a["status"]:
+            a["status"] = AttendanceStatus.Absent.name
     return JsonResponse(response, safe=False)
 
 
@@ -390,37 +418,48 @@ def fetchAllStudentAttendances(student):
             )
     return response
 
+
 title = "Attendance lagaya kya? 🧐"
 description = "Lagao jaldi 🤬"
+
 
 def sendNotification(request, pk):
     if not Student.can_send_notifications(request):
         return JsonResponse({"message": "Forbidden"}, status=400)
-    student = Student.objects.get(pk = pk)
+    student = Student.objects.get(pk=pk)
     if not student.fcmtoken:
         return JsonResponse({"message": "not send"}, status=400)
     pushNotification([student.fcmtoken], title, description)
 
     return JsonResponse({"message": "sent"})
 
+
 def sendReminderForClass(request, pk):
     if not Student.can_send_notifications(request):
         return JsonResponse({"message": "Forbidden"}, status=400)
-     
-    subject = SubjectClass.objects.get(pk = pk)
+
+    subject = SubjectClass.objects.get(pk=pk)
     student_status = subject.get_all_students_attendance_status()
-    students = [student for student, status in student_status if status == AttendanceStatus.Absent]
-    students = [student for student in students if student.fcmtoken] 
+    students = [
+        student
+        for student, status in student_status
+        if status == AttendanceStatus.Absent
+    ]
+    students = [student for student in students if student.fcmtoken]
     fcmtokens = [student.fcmtoken for student in students]
 
-    admin = Student.objects.get(mail = 'diwakar.gupta@scaler.com')
+    admin = Student.objects.get(mail="diwakar.gupta@scaler.com")
     if admin.fcmtoken:
         fcmtokens.append(admin.fcmtoken)
     pushNotification(fcmtokens, title, description)
-    
-    return JsonResponse({"message": f"Sent to {len(fcmtokens)} students", "sent_to": [
-        s.name for s in students
-    ]})
+
+    return JsonResponse(
+        {
+            "message": f"Sent to {len(fcmtokens)} students",
+            "sent_to": [s.name for s in students],
+        }
+    )
+
 
 @csrf_exempt
 def getTodaysClass(request):
@@ -441,12 +480,15 @@ def getTodaysClass(request):
         details["attendance_end_time"] = curr_class.attendance_end_time
         details["is_in_attendance_window"] = curr_class.is_in_attendance_window()
 
-        attendance_status = ClassAttendance.get_attendance_status_for(student, curr_class).name
+        attendance_status = ClassAttendance.get_attendance_status_for(
+            student, curr_class
+        ).name
         details["attendance_status"] = attendance_status
-        
+
         response.append(details)
 
     return JsonResponse(response, safe=False)
+
 
 @csrf_exempt
 def get_aggregated_attendance(request):
@@ -454,14 +496,17 @@ def get_aggregated_attendance(request):
     token = data["token"]
 
     student = Student.get_object_with_token(token)
-    response = Student.get_aggregated_attendance(student=student, include_optional=False)
+    response = Student.get_aggregated_attendance(
+        student=student, include_optional=False
+    )
 
     return JsonResponse(response)
+
 
 def verify_false_attempt(request, pk):
     if not Student.can_verify_false_attempt(request):
         return JsonResponse({"message": "Forbidden"}, status=400)
-    
-    false_attempt = FalseAttemptGeoLocation.objects.get(pk = pk)
+
+    false_attempt = FalseAttemptGeoLocation.objects.get(pk=pk)
     ClassAttendanceWithGeoLocation.create_from(false_attempt, request.user)
     return JsonResponse({"message": "ok"})

@@ -2,7 +2,6 @@ import csv
 from attendance.models import (
     SubjectClass,
     Student,
-    ClassAttendance,
     ClassAttendanceByBSM,
 )
 from django.contrib.auth.models import User
@@ -49,7 +48,7 @@ with open(csv_file_path, "r") as file:
         print(mail)
 
         student, is_created = Student.objects.get_or_create(mail=mail)
-        if student.name == None or len(student.name) == 0:
+        if student.name is None or len(student.name) == 0:
             student.name = row["NAME"]
             student.save()
 

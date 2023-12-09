@@ -5,21 +5,24 @@ from attendance.models import (
     Student,
     SubjectClass,
     AttendanceStatus,
-    User,
 )
 from django.utils import timezone
 
+
 class ClassAttendanceWithGeoLocationTest(TestCase):
     def setUp(self):
-        
         self.student = Student.objects.create(
             name="Test Student", mail="teststudent@sst.scaler.com"
         )
         start_time = timezone.datetime(year=2023, month=12, day=8, hour=9, minute=0)
         end_time = timezone.datetime(year=2023, month=12, day=8, hour=12, minute=0)
-        attendance_start_time = timezone.datetime(year=2023, month=12, day=8, hour=8, minute=50)
-        attendance_end_time = timezone.datetime(year=2023, month=12, day=8, hour=9, minute=30)
-    
+        attendance_start_time = timezone.datetime(
+            year=2023, month=12, day=8, hour=8, minute=50
+        )
+        attendance_end_time = timezone.datetime(
+            year=2023, month=12, day=8, hour=9, minute=30
+        )
+
         self.subject = SubjectClass.objects.create(
             name="Test Subject",
             attendance_start_time=timezone.make_aware(attendance_start_time),
@@ -35,7 +38,7 @@ class ClassAttendanceWithGeoLocationTest(TestCase):
         )
         self.assertEqual(self.student, class_attendance.student)
         self.assertEqual(self.subject, class_attendance.subject)
-        
+
         c = ClassAttendance.objects.get(student=self.student, subject=self.subject)
         attendance_with_geo = ClassAttendanceWithGeoLocation.objects.get(
             class_attendance=c

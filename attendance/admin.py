@@ -10,6 +10,7 @@ from attendance.models import (
     ClassAttendanceWithGeoLocation,
     FalseAttemptGeoLocation,
     ClassAttendanceByBSM,
+    ProblemSolvingPercentage,
 )
 
 # Register your models here.
@@ -55,6 +56,21 @@ class ClassAttendanceByBSMAdmin(admin.ModelAdmin):
         "class_attendance__student",
     )  # Add the fields you want to use as filters
     list_editable = ("status",)
+
+
+class ProblemSolvingPercentageAdmin(admin.ModelAdmin):
+    list_display = (
+        "student",
+        "subject",
+        "percentage",
+        "solved_questions",
+        "total_questions",
+    )
+
+    def percentage(self, obj):
+        if obj.total_questions == 0:
+            return 0
+        return int((obj.solved_questions / obj.total_questions) * 100)
 
 
 class StudentAdmin(admin.ModelAdmin):
@@ -130,6 +146,7 @@ class SubjectClassAdmin(admin.ModelAdmin):
         return super().has_change_permission(request, obj=obj)
 
 
+admin.site.register(ProblemSolvingPercentage, ProblemSolvingPercentageAdmin)
 admin.site.register(ClassAttendanceByBSM, ClassAttendanceByBSMAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(SubjectClass, SubjectClassAdmin)

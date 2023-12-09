@@ -7,6 +7,7 @@ from attendance.models import (
     ClassAttendanceByBSM,
     AttendanceStatus,
     ClassAttendance,
+    ProblemSolvingPercentage,
     GeoLocationDataContrib,
     FalseAttemptGeoLocation,
     ClassAttendanceWithGeoLocation,
@@ -19,6 +20,20 @@ from django.shortcuts import render
 from django.urls import reverse
 from utils.validate_location import is_in_class
 from utils.pushNotification import pushNotification
+
+
+def psp(request, mail_prefix):
+    response = []
+
+    student = Student.objects.get(mail__startswith=mail_prefix + "@")
+    for p in ProblemSolvingPercentage.objects.filter(student=student):
+        data = {}
+        data["name"] = p.subject.name
+        data["total_questions"] = p.total_questions
+        data["solved_questions"] = p.solved_questions
+        response.append(data)
+
+    return JsonResponse({"data": response, "status": "success"})
 
 
 def version(request):

@@ -292,12 +292,12 @@ class ClassAttendance(models.Model):
     def get_attendance_by_bsm_status(self):
         if not hasattr(self, "classattendancebybsm"):
             return None
-        return self.classattendancebybsm.get_attendance_status()
+        return ClassAttendanceByBSM.objects.get(pk = self.classattendancebybsm.pk).get_attendance_status()
 
     def get_attendance_with_geo_location_status(self):
         if not hasattr(self, "classattendancewithgeolocation"):
             return None
-        return self.classattendancewithgeolocation.get_attendance_status()
+        return ClassAttendanceWithGeoLocation.objects.get(pk = self.classattendancewithgeolocation.pk).get_attendance_status()
 
     def get_attendance_status(self, use_field=True):
         if not use_field:
@@ -451,7 +451,7 @@ class ClassAttendanceByBSM(models.Model):
         return self.status_mapping.get(self.status)
 
     @classmethod
-    def create_with(cls, student, subject, status, marked_by):
+    def create_with(cls, student, subject, status, marked_by, return_obj=False):
         class_attendance, _ = ClassAttendance.objects.get_or_create(
             student=student, subject=subject
         )
@@ -461,6 +461,8 @@ class ClassAttendanceByBSM(models.Model):
             defaults={"marked_by": marked_by, "status": status},
         )
         attendance.save()
+        if return_obj:
+            return (class_attendance, attendance)
         return attendance
 
 

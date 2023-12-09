@@ -27,7 +27,7 @@ class Student(models.Model):
     token = models.CharField(
         max_length=100, blank=True, null=True, unique=True, db_index=True
     )
-    user = models.ForeignKey(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(User, default=None, null=True, blank=True, on_delete=models.SET_NULL)
     fcmtoken = models.CharField(max_length=255, blank=True, null=True)
 
     @classmethod
@@ -160,7 +160,7 @@ class SubjectClass(models.Model):
         Subject, default=None, null=True, blank=True, on_delete=models.CASCADE
     )
     is_attendance_by_geo_location_enabled = models.BooleanField(default=True)
-    merge_attendace_with_class = models.ForeignKey('self', blank=True, null=True, on_delete=models.DO_NOTHING, default=None)
+    merge_attendace_with_class = models.ForeignKey('self', blank=True, null=True, on_delete=models.SET_DEFAULT, default=None)
 
     def __str__(self):
         return (
@@ -338,7 +338,7 @@ class ClassAttendanceWithGeoLocation(models.Model):
     lat = models.DecimalField(max_digits=13, decimal_places=10)
     lon = models.DecimalField(max_digits=13, decimal_places=10)
     accuracy = models.DecimalField(max_digits=13, decimal_places=10)
-    class_attendance = models.OneToOneField(ClassAttendance, on_delete=models.CASCADE)
+    class_attendance = models.OneToOneField(ClassAttendance, on_delete=models.CASCADE, db_index=True)
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
@@ -386,9 +386,9 @@ class ClassAttendanceByBSM(models.Model):
         "absent": AttendanceStatus.Absent,
     }
 
-    marked_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    class_attendance = models.OneToOneField(ClassAttendance, on_delete=models.CASCADE)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="present")
+    marked_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    class_attendance = models.OneToOneField(ClassAttendance, on_delete=models.CASCADE, db_index=True)
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="present", db_index=True)
 
     def __str__(self):
         return (

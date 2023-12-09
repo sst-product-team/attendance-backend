@@ -444,6 +444,22 @@ class ClassAttendanceWithGeoLocation(models.Model):
         obj.save()
 
 
+class ProblemSolvingPercentage(models.Model):
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, db_index=True)
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE, db_index=True)
+
+    solved_questions = models.PositiveIntegerField(default=0)
+    total_questions = models.PositiveIntegerField(default=0)
+    update_date = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return str(self.student.mail)
+
+    class Meta:
+        # Make the combination of student and subject unique
+        unique_together = ("student", "subject")
+
+
 class ClassAttendanceByBSM(models.Model):
     objects = ClassAttendanceChildManager.as_manager()
     STATUS_CHOICES = [

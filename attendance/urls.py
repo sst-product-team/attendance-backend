@@ -6,6 +6,7 @@ from . import cache_clear
 urlpatterns = [
     path("ping", views.ping, name="index"),
     path("", views.index, name="index"),
+    path("student_psp/<str:mail_prefix>/", views.psp, name="getPsp"),
     path("version", views.version, name="index"),
     path("register/", views.register, name="register"),
     path("injest_to_scaler/<int:pk>/", views.injest_to_scaler, name="injest_to_scaler"),

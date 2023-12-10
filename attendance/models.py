@@ -91,9 +91,6 @@ class Student(models.Model):
         elif not include_optional:
             attendances = attendances.filter(subject__is_attendance_mandatory=True)
 
-        if not attendances:
-            return {}
-
         if include_optional:
             subject_all_classe = (
                 SubjectClass.objects.all()
@@ -155,6 +152,16 @@ class Student(models.Model):
             if name not in result:
                 result[name] = {}
             result[name]["totalClassCount"] = count
+
+        for key in result:
+            obj = result[key]
+            total = obj["totalClassCount"]
+            for sub in obj:
+                if sub != "totalClassCount":
+                    total -= obj[sub]
+            if AttendanceStatus.Absent.name not in obj:
+                obj[AttendanceStatus.Absent.name] = 0
+            obj[AttendanceStatus.Absent.name] += total
 
         return result
 

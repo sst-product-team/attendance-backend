@@ -1,16 +1,18 @@
-from attendance.models import ProjectConfiguration, ClassAttendance, FalseAttemptGeoLocation
+from attendance.models import (
+    FalseAttemptGeoLocation,
+)
 
 import csv
-file_path = 'example.csv'
-cf=open(file_path, 'w', newline='')
+
+file_path = "example.csv"
+cf = open(file_path, "w", newline="")
 csv_writer = csv.writer(cf)
 
-csv_writer.writerow(['mail', 'lat', 'lon', 'accuracy'])
+csv_writer.writerow(["mail", "lat", "lon", "accuracy"])
 
-i=0
+i = 0
 for f in FalseAttemptGeoLocation.objects.all():
-    csv_writer.writerow([f.student.mail,f.lat,f.lon,f.accuracy])
-    if i%100==0:
+    csv_writer.writerow([f.student.mail, f.lat, f.lon, f.accuracy])
+    if i % 100 == 0:
         print(i)
-    i+=1
-
+    i += 1

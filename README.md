@@ -1,5 +1,26 @@
 # attendance-backend
 
+## Code contribution
+
+### Lint & Formatting
+We use `flake8==6.1.0` as a linter and `black==23.11.0` as a code formatter
+
+Install
+```bash
+pip install flake8==6.1.0 black==23.11.0
+```
+
+Run black
+```bash
+black .
+```
+
+Run flake8
+```bash
+flake8 .
+```
+
+
 
 ## Setup
 

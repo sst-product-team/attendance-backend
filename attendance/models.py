@@ -1,6 +1,6 @@
 from django.core.cache import cache
 from django.db import models
-from django.db.models import Count, Case, When, Value, IntegerField
+from django.db.models import Count
 from django.db.models import F
 from django.utils import timezone
 from enum import Enum
@@ -27,17 +27,23 @@ class Student(models.Model):
     token = models.CharField(
         max_length=100, blank=True, null=True, unique=True, db_index=True
     )
-    user = models.ForeignKey(User, default=None, null=True, blank=True, on_delete=models.DO_NOTHING)
+    user = models.ForeignKey(
+        User, default=None, null=True, blank=True, on_delete=models.SET_NULL
+    )
     fcmtoken = models.CharField(max_length=255, blank=True, null=True)
 
     @classmethod
     def can_mark_attendance(cls, request):
-        return request.user.has_perm('attendance.can_mark_attendance')
-   
+        return request.user.has_perm("attendance.can_mark_attendance")
+
     @classmethod
     def can_send_notifications(cls, request):
-        return request.user.has_perm('attendance.can_send_notifications')
-   
+        return request.user.has_perm("attendance.can_send_notifications")
+
+    @classmethod
+    def can_verify_false_attempt(cls, request):
+        return request.user.has_perm("attendance.verify_false_attempt")
+
     def get_id_number(self):
         if self.mail.endswith("@scaler.com"):
             return None
@@ -69,34 +75,36 @@ class Student(models.Model):
 
     def get_all_attendance(self, include_optional=False):
         if include_optional:
-            return (
-                ClassAttendance.objects.filter(student=self)
-            )
+            return ClassAttendance.objects.filter(student=self)
         else:
-           return (
-                ClassAttendance.objects.filter(student=self, subject__is_attendance_mandatory=True)
-            ) 
-    
+            return ClassAttendance.objects.filter(
+                student=self, subject__is_attendance_mandatory=True
+            )
+
     @classmethod
-    def get_aggregated_attendance(cls, attendances=None, student=None, include_optional=False):
+    def get_aggregated_attendance(
+        cls, attendances=None, student=None, include_optional=False
+    ):
         if student and not attendances:
             # If only the student is provided, fetch all attendances for the student
             attendances = student.get_all_attendance(include_optional)
         elif not include_optional:
-           attendances = attendances.filter(subject__is_attendance_mandatory=True) 
-
-        if not attendances:
-            return {}
+            attendances = attendances.filter(subject__is_attendance_mandatory=True)
 
         if include_optional:
-            subject_all_classe = SubjectClass.objects.all().annotate(
-                course=F("subject__name")
-            ).annotate(count=Count("id"))
+            subject_all_classe = (
+                SubjectClass.objects.all()
+                .annotate(course=F("subject__name"))
+                .values("subject__name")
+                .annotate(count=Count("id"))
+            )
         else:
-            subject_all_classe = SubjectClass.objects.filter(is_attendance_mandatory=True).annotate(
-                course=F("subject__name")
-            ).values("subject__name").annotate(count=Count("id"))
-        
+            subject_all_classe = (
+                SubjectClass.objects.filter(is_attendance_mandatory=True)
+                .annotate(course=F("subject__name"))
+                .values("subject__name")
+                .annotate(count=Count("id"))
+            )
 
         # Annotate each attendance with status_by_bsm and status_by_geo
         annotated_attendances = attendances.annotate(
@@ -106,37 +114,54 @@ class Student(models.Model):
         )
 
         # Use Case and When to count occurrences of each status combination
-        aggregated_data = (
-            annotated_attendances.values("subject_name", "status_by_bsm", "status_by_geo")
-            .annotate(count=Count("id"))
-        )
+        aggregated_data = annotated_attendances.values(
+            "subject_name", "status_by_bsm", "status_by_geo"
+        ).annotate(count=Count("id"))
 
         # Create the final aggregated result
         result = {}
         uncategorised = "uncategorised"
         for item in aggregated_data:
-            subject_name, status_by_geo, status_by_bsm = item["subject_name"], item["status_by_geo"], item["status_by_bsm"]
+            subject_name, status_by_geo, status_by_bsm = (
+                item["subject_name"],
+                item["status_by_geo"],
+                item["status_by_bsm"],
+            )
             if not subject_name:
                 subject_name = uncategorised
-            status_by_geo = ClassAttendanceWithGeoLocation.status_mapping.get(status_by_geo)
+            status_by_geo = ClassAttendanceWithGeoLocation.status_mapping.get(
+                status_by_geo
+            )
             status_by_bsm = ClassAttendanceByBSM.status_mapping.get(status_by_bsm)
-            status = ClassAttendance.get_attendance_status_by_status(status_by_bsm, status_by_geo).name
-            
+            status = ClassAttendance.get_attendance_status_by_status(
+                status_by_bsm, status_by_geo
+            ).name
+
             if subject_name not in result:
-               result[subject_name] = {}
-            
+                result[subject_name] = {}
+
             if status not in result[subject_name]:
-               result[subject_name][status] = 0 
+                result[subject_name][status] = 0
             result[subject_name][status] += item["count"]
-        
+
         for item in subject_all_classe:
             # print(item)
-            name, count = item['subject__name'], item['count']
+            name, count = item["subject__name"], item["count"]
             if not name:
                 name = uncategorised
             if name not in result:
-               result[name] = {} 
-            result[name]['totalClassCount'] = count
+                result[name] = {}
+            result[name]["totalClassCount"] = count
+
+        for key in result:
+            obj = result[key]
+            total = obj["totalClassCount"]
+            for sub in obj:
+                if sub != "totalClassCount":
+                    total -= obj[sub]
+            if AttendanceStatus.Absent.name not in obj:
+                obj[AttendanceStatus.Absent.name] = 0
+            obj[AttendanceStatus.Absent.name] += total
 
         return result
 
@@ -160,32 +185,29 @@ class SubjectClass(models.Model):
         Subject, default=None, null=True, blank=True, on_delete=models.CASCADE
     )
     is_attendance_by_geo_location_enabled = models.BooleanField(default=True)
-    merge_attendace_with_class = models.ForeignKey('self', blank=True, null=True, on_delete=models.DO_NOTHING, default=None)
+    merge_attendace_with_class = models.ForeignKey(
+        "self", blank=True, null=True, on_delete=models.SET_DEFAULT, default=None
+    )
 
     def __str__(self):
         return (
             f"{self.class_start_time.astimezone().strftime('%d/%m/%Y')} => {self.name}"
         )
-    
-    def get_all_students_attendance_status(self):
 
+    def get_all_students_attendance_status(self):
         allClassAttendance = self.get_all_attendance()
 
         json_attendance = []
         mail_set = set()
         for attendance in allClassAttendance:
-            json_attendance.append(
-                (attendance.student, attendance.attendance_status)
-            )
+            json_attendance.append((attendance.student, attendance.attendance_status))
             mail_set.add(attendance.student.mail)
-        
+
         all_students = Student.get_all_students()
 
         for student in all_students:
             if student.mail not in mail_set:
-                json_attendance.append(
-                    (student, AttendanceStatus.Absent)
-                )
+                json_attendance.append((student, AttendanceStatus.Absent))
 
         return json_attendance
 
@@ -219,15 +241,17 @@ class SubjectClass(models.Model):
         return result
 
     @classmethod
-    def get_classes_for(cls, start=timezone.now().date(), next_x_days=1, use_cache=True):
-        cache_key = f"get_todays_classs"
+    def get_classes_for(
+        cls, start=timezone.now().date(), next_x_days=1, use_cache=True
+    ):
+        cache_key = "get_todays_classs"
 
         if use_cache:
             result = cache.get(cache_key)
             if result is not None:
                 return result
-        
-        end = start+timezone.timedelta(days=next_x_days-1)
+
+        end = start + timezone.timedelta(days=next_x_days - 1)
         filtered_subject_class = SubjectClass.objects.filter(
             class_start_time__date__lte=start, class_end_time__date__gte=end
         )
@@ -270,8 +294,8 @@ class ClassAttendance(models.Model):
         permissions = [
             ("can_mark_attendance", "Can Mark Attendance"),
             ("can_send_notifications", "Can Send Notifications"),
+            ("verify_false_attempt", "Verify False Attempt GeoLocation"),
         ]
-
 
     def __str__(self):
         return self.student.mail + " " + self.subject.name
@@ -287,21 +311,27 @@ class ClassAttendance(models.Model):
     def get_attendance_by_bsm_status(self):
         if not hasattr(self, "classattendancebybsm"):
             return None
-        return self.classattendancebybsm.get_attendance_status()
+        return ClassAttendanceByBSM.objects.get(
+            pk=self.classattendancebybsm.pk
+        ).get_attendance_status()
 
     def get_attendance_with_geo_location_status(self):
         if not hasattr(self, "classattendancewithgeolocation"):
             return None
-        return self.classattendancewithgeolocation.get_attendance_status()
+        return ClassAttendanceWithGeoLocation.objects.get(
+            pk=self.classattendancewithgeolocation.pk
+        ).get_attendance_status()
 
     def get_attendance_status(self, use_field=True):
         if not use_field:
             by_bsm = self.get_attendance_by_bsm_status()
             with_geo_location = self.get_attendance_with_geo_location_status()
-            attendance_status = ClassAttendance.get_attendance_status_by_status(by_bsm, with_geo_location)
+            attendance_status = ClassAttendance.get_attendance_status_by_status(
+                by_bsm, with_geo_location
+            )
             return attendance_status
         return self.attendance_status
-    
+
     @classmethod
     def get_attendance_status_by_status(cls, status_by_bsm, status_by_geo):
         if status_by_bsm == AttendanceStatus.Present:
@@ -316,13 +346,27 @@ class ClassAttendance(models.Model):
             return AttendanceStatus.Proxy
 
         return AttendanceStatus.Absent
-    
+
     def update_attendance_status(self):
         self.attendance_status = self.get_attendance_status(use_field=False)
         self.save()
 
 
+class ClassAttendanceChildManager(models.QuerySet):
+    def save(self, *args, **kwargs):
+        for obj in self:
+            obj.save()
+        super(ClassAttendanceChildManager, self).save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        for obj in self:
+            obj.delete()
+        super(ClassAttendanceChildManager, self).delete(*args, **kwargs)
+
+
 class ClassAttendanceWithGeoLocation(models.Model):
+    objects = ClassAttendanceChildManager.as_manager()
+
     STATUS_CHOICES = [
         ("proxy", "Proxy"),
         ("verified", "Verified"),
@@ -338,12 +382,17 @@ class ClassAttendanceWithGeoLocation(models.Model):
     lat = models.DecimalField(max_digits=13, decimal_places=10)
     lon = models.DecimalField(max_digits=13, decimal_places=10)
     accuracy = models.DecimalField(max_digits=13, decimal_places=10)
-    class_attendance = models.OneToOneField(ClassAttendance, on_delete=models.CASCADE)
+    class_attendance = models.OneToOneField(
+        ClassAttendance, on_delete=models.CASCADE, db_index=True
+    )
     status = models.CharField(
         max_length=10,
         choices=STATUS_CHOICES,
         default="standby",  # Set the default value if needed
         db_index=True,
+    )
+    verified_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, default=None, blank=True, null=True
     )
 
     def get_attendance_status(self):
@@ -357,24 +406,46 @@ class ClassAttendanceWithGeoLocation(models.Model):
         super().save(*args, **kwargs)
         self.class_attendance.update_attendance_status()
 
+    def delete(self, *args, **kwargs):
+        class_attendance__pk = self.class_attendance.pk
+        super().delete(*args, **kwargs)
+        ClassAttendance.objects.get(pk=class_attendance__pk).update_attendance_status()
+
     def __str__(self):
         return str(self.class_attendance)
 
     @classmethod
-    def create_with(cls, student, subject, lat, lon, accuracy):
-        class_attendance, is_created = ClassAttendance.objects.get_or_create(
+    def create_with(cls, student, subject, lat, lon, accuracy, return_obj=False):
+        class_attendance, _ = ClassAttendance.objects.get_or_create(
             student=student, subject=subject
         )
 
-        attendance, is_created = ClassAttendanceWithGeoLocation.objects.get_or_create(
+        attendance, _ = ClassAttendanceWithGeoLocation.objects.get_or_create(
             class_attendance=class_attendance,
-           defaults={"lat": lat, "lon": lon, "accuracy": accuracy}, 
+            defaults={"lat": lat, "lon": lon, "accuracy": accuracy},
         )
         attendance.save()
+        if return_obj:
+            return (class_attendance, attendance)
         return class_attendance
+
+    @classmethod
+    def create_from(cls, false_attempt, verified_by):
+        _, obj = cls.create_with(
+            false_attempt.student,
+            false_attempt.subject,
+            false_attempt.lat,
+            false_attempt.lon,
+            false_attempt.accuracy,
+            return_obj=True,
+        )
+        obj.status = "verified"
+        obj.verified_by = verified_by
+        obj.save()
 
 
 class ClassAttendanceByBSM(models.Model):
+    objects = ClassAttendanceChildManager.as_manager()
     STATUS_CHOICES = [
         ("proxy", "Proxy"),
         ("present", "Present"),
@@ -386,9 +457,13 @@ class ClassAttendanceByBSM(models.Model):
         "absent": AttendanceStatus.Absent,
     }
 
-    marked_by = models.ForeignKey(User, on_delete=models.CASCADE)
-    class_attendance = models.OneToOneField(ClassAttendance, on_delete=models.CASCADE)
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default="present")
+    marked_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    class_attendance = models.OneToOneField(
+        ClassAttendance, on_delete=models.CASCADE, db_index=True
+    )
+    status = models.CharField(
+        max_length=10, choices=STATUS_CHOICES, default="present", db_index=True
+    )
 
     def __str__(self):
         return (
@@ -399,11 +474,16 @@ class ClassAttendanceByBSM(models.Model):
         super().save(*args, **kwargs)
         self.class_attendance.update_attendance_status()
 
+    def delete(self, *args, **kwargs):
+        class_attendance__pk = self.class_attendance.pk
+        super().delete(*args, **kwargs)
+        ClassAttendance.objects.get(pk=class_attendance__pk).update_attendance_status()
+
     def get_attendance_status(self):
         return self.status_mapping.get(self.status)
 
     @classmethod
-    def create_with(cls, student, subject, status, marked_by):
+    def create_with(cls, student, subject, status, marked_by, return_obj=False):
         class_attendance, _ = ClassAttendance.objects.get_or_create(
             student=student, subject=subject
         )
@@ -413,6 +493,8 @@ class ClassAttendanceByBSM(models.Model):
             defaults={"marked_by": marked_by, "status": status},
         )
         attendance.save()
+        if return_obj:
+            return (class_attendance, attendance)
         return attendance
 
 
@@ -449,12 +531,12 @@ class FalseAttemptGeoLocation(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return str(self.student.mail)
+        return f"{self.subject.name}: {self.student.mail.split('@')[0]}"
 
 
 class ProjectConfiguration(models.Model):
     APP_LATEST_VERSION = models.CharField(max_length=12)
-    MIN_SUPPORTED_APP_VERSION = models.CharField(max_length=12, default='1.0.0')
+    MIN_SUPPORTED_APP_VERSION = models.CharField(max_length=12, default="1.0.0")
     APK_FILE = models.TextField()
     VERSION_NAME = models.CharField(max_length=20, default="")
 
@@ -475,9 +557,8 @@ class ProjectConfiguration(models.Model):
             pk=1,
             defaults={
                 "APP_LATEST_VERSION": "0.2.5",
-                "APK_FILE": "https://drive.google.com/file/d/1dgL7fEq16OugBBxLo2Twn_SC6IGXYmjp/view?usp=sharing",
+                "APK_FILE": "https://drive.google.com/file/d/1dgL7fEq16OugBBxLo2Twn_SC6IGXYmjp/view?usp=sharing",  # noqa: E501
             },
         )
         cache.set(cache_key, obj, 60 * 5)
         return obj
-

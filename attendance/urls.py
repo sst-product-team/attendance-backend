@@ -10,7 +10,11 @@ urlpatterns = [
     path("register/", views.register, name="register"),
     path("injest_to_scaler/<int:pk>/", views.injest_to_scaler, name="injest_to_scaler"),
     # path("geo/", views.geo, name="register"),
-    path("getcurclassattendance/",views.getcurclassattendance,name="getcurclassattendance"),
+    path(
+        "getcurclassattendance/",
+        views.getcurclassattendance,
+        name="getcurclassattendance",
+    ),
     path("getTodaysClass/", views.getTodaysClass, name="getTodaysClass"),
     path(
         "cache/",
@@ -35,15 +39,34 @@ urlpatterns = [
             ]
         ),
     ),
-    
-    path("mark_attendance/<int:pk>/",views.mark_attendance_subject,name="mark_attendance_subject"),
+    path(
+        "mark_attendance/<int:pk>/",
+        views.mark_attendance_subject,
+        name="mark_attendance_subject",
+    ),
     path("getAttendance/<int:pk>/", views.getAttendance, name="getAttendance"),
     path(
         "getAttendanceView/<int:pk>/", views.getAttendanceView, name="getAttendanceView"
     ),
-    
-    path("studentAttendance/<str:mail_prefix>/",views.studentAttendance,name="studentAttendance"),
+    path(
+        "studentAttendance/<str:mail_prefix>/",
+        views.studentAttendance,
+        name="studentAttendance",
+    ),
     path("sendNotification/<int:pk>/", views.sendNotification, name="sendNotification"),
-    path("sendReminderForClass/<int:pk>/", views.sendReminderForClass, name="sendReminderForClass"),
-    path("get_aggregated_attendance/", views.get_aggregated_attendance, name="get_aggregated_attendance"),
+    path(
+        "sendReminderForClass/<int:pk>/",
+        views.sendReminderForClass,
+        name="sendReminderForClass",
+    ),
+    path(
+        "get_aggregated_attendance/",
+        views.get_aggregated_attendance,
+        name="get_aggregated_attendance",
+    ),
+    path(
+        "falseattempt/<int:pk>/verify/",
+        views.verify_false_attempt,
+        name="verify_false_attempt",
+    ),
 ]

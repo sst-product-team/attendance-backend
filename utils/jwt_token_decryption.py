@@ -13,3 +13,8 @@ def decode_jwt_token(token):
     except jwt.InvalidTokenError:
         # Handle invalid token
         return {"error": "Invalid token"}
+
+
+def encode_payload(payload):
+    encoded = jwt.encode(payload, settings.JWT_SECRET_KEY, algorithm="HS256")
+    return encoded

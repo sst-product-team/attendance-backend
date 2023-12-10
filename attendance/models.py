@@ -98,6 +98,7 @@ class Student(models.Model):
             subject_all_classe = (
                 SubjectClass.objects.all()
                 .annotate(course=F("subject__name"))
+                .values("subject__name")
                 .annotate(count=Count("id"))
             )
         else:

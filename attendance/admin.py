@@ -58,7 +58,7 @@ class ClassAttendanceByBSMAdmin(admin.ModelAdmin):
 
 
 class StudentAdmin(admin.ModelAdmin):
-    list_display = ("name", "mail", "show_attendance", "send_notification")
+    list_display = ("name", "mail", "send_notification")
     search_fields = ["name", "mail"]
 
     def show_attendance(self, obj):

@@ -242,7 +242,7 @@ class SubjectClass(models.Model):
 
     @classmethod
     def get_classes_for(
-        cls, start=timezone.now().date(), next_x_days=1, use_cache=True
+        cls, start=timezone.now().astimezone().date(), next_x_days=1, use_cache=True
     ):
         cache_key = "get_todays_classs"
 

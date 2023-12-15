@@ -17,6 +17,10 @@ class AttendanceStatus(Enum):
     Proxy = 2
     Absent = 3
 
+    @classmethod
+    def get_all_status(cls):
+        return [x.name for x in list(cls)]
+
 
 # Create your models here.
 class Student(models.Model):

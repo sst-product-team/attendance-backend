@@ -7,5 +7,9 @@ else:
     notifier = None
 
 
-def pushNotification(fcmtokens, title, description, tag="attendance_reminder"):
-    notifier.notify(title, description, fcmtokens, tag)
+def pushNotification(fcmtokens, title, description, tag="attendance_reminder", sound="ringer"):
+    if sound:
+        channel_id="sound_notifier"
+    else:
+        channel_id=''
+    notifier.notify(title, description, fcmtokens, tag, channel_id, sound)

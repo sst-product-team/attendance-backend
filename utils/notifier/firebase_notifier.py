@@ -3,15 +3,15 @@ from firebase_admin import credentials, messaging
 
 
 class Notifier:
-    def notify(self, title, body, tokens, tag):
+    def notify(self, title, body, tokens, tag, channel_id, sound):
         message = messaging.MulticastMessage(
             android=messaging.AndroidConfig(
                 priority="high",
                 notification=messaging.AndroidNotification(
                     title=title,
                     body=body,
-                    channel_id="sound_notifier",
-                    sound="ringer",
+                    channel_id=channel_id,
+                    sound=sound,
                     tag=tag,
                 ),
             ),

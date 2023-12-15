@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{data.student.name}}</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #F0F0F0;
+      color: #333;
+      margin: 0;
+      padding: 0;
+    }
+    h1 {
+      background-color: #007BFF;
+      color: white;
+      text-align: center;
+      padding: 20px 0;
+      margin-top: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #007BFF;
+      color: white;
+    }
+    tr:nth-child(even) {
+      background-color: #D6E4F0; /* Light blue shade for even rows */
+    }
+    tr:nth-child(odd) {
+      background-color: #C1D4E9; /* Darker blue shade for odd rows */
+    }
+    .green {
+      color: green;
+      font-weight: bold;
+    }
+    .red {
+      color: red;
+      font-weight: bold;
+    }
+    .watermark {
+      position: fixed;
+      bottom: 10px;
+      right: 10px;
+      font-style: italic;
+      color: #553c3c;
+      opacity: 0.6;
+      z-index: 1000;
+      transition: opacity 0.5s ease-in-out;
+    }
+    .watermark:hover {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+<div class="watermark">Made by Akanksha Gaur</div>
+<h1>{{data.student.name}}</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Class Name</th>
+      <th>Start Time</th>
+      <th>End Time</th>
+      <th>Attendance Mandatory</th>
+      <th>Status</th>
+    </tr>
+  </thead>
+  <tbody id="attendanceData">
+    <!-- Data will be populated here -->
+    {% for attendance_info in data.all_attendance %}
+            
+            <tr>
+                <td>{{attendance_info.name}}</td>
+                <td>{{attendance_info.class_start_time}}</td>
+                <td>{{attendance_info.class_end_time}}</td>
+                <td>{{attendance_info.is_attendance_mandatory}}</td>
+                
+                {% if attendance_info.status == 'Present' %}
+                    <td class="green">Present</td>
+                {% else %}
+                    <td class="red">Absent</td>
+                {% endif %}
+            </tr>
+    {% endfor %}
+    
+    <!-- <tr><td>Test</td><td>21/11/2023, 09:10:22</td><td>21/11/2023, 09:48:08</td><td>No</td></tr> -->
+  </tbody>
+</table>
+</body>
+</html>

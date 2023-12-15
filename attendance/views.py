@@ -389,7 +389,18 @@ def studentAttendance(request, mail_prefix):
     for a in response["all_attendance"]:
         if not a["status"]:
             a["status"] = AttendanceStatus.Absent.name
-    return JsonResponse(response, safe=False)
+
+    sorted_attendance = sorted(
+        response["all_attendance"], key=lambda x: x["class_start_time"], reverse=True
+    )
+    response["all_attendance"] = sorted_attendance
+    return render(
+        request,
+        "attendance/studentAttendance.html",
+        {
+            "data": response,
+        },
+    )
 
 
 def fetchAllStudentAttendances(student):

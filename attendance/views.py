@@ -394,12 +394,25 @@ def studentAttendance(request, mail_prefix):
         response["all_attendance"], key=lambda x: x["class_start_time"], reverse=True
     )
     response["all_attendance"] = sorted_attendance
+
+    aggregated_attendance = Student.get_aggregated_attendance(
+        student=student, include_optional=False
+    )
+
+    overall_attendance = {}
+    keys = ["totalClassCount", *AttendanceStatus.get_all_status()]
+    for key in keys:
+        overall_attendance[key] = 0
+
+    for subject in aggregated_attendance:
+        for key in keys:
+            if key in aggregated_attendance[subject]:
+                overall_attendance[key] += aggregated_attendance[subject][key]
+
     return render(
         request,
         "attendance/studentAttendance.html",
-        {
-            "data": response,
-        },
+        {"data": response, "overall_attendance": overall_attendance},
     )
 
 

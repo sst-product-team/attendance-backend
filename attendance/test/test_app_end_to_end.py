@@ -30,10 +30,10 @@ class EndToEndTest(TestCase):
         )
         self.project_config = ProjectConfiguration.get_config()
 
-    def register(self):
+    def register(self, mail):
         token = encode_payload(
             {
-                "iss": "test@sst.scaler.com",
+                "iss": mail,
                 "did": self.some_random_did,
             }
         )
@@ -83,7 +83,7 @@ class EndToEndTest(TestCase):
         return response, content
 
     def test_register_backend(self):
-        response = self.register()
+        response = self.register("test@sst.scaler.com")
         student = Student.objects.filter(mail="test@sst.scaler.com")
         self.assertTrue(student.exists(), "Student not created after registering")
         self.assertEquals(response.status_code, 200, "Student register failed")
@@ -107,3 +107,31 @@ class EndToEndTest(TestCase):
             200,
             "Fetch attendance failed after marking attendance",
         )
+
+    def test_register_with_non_sst_mail(self):
+        from django.db.models import Q
+
+        mail = "test@example.com"
+        response = self.register(mail)
+        self.assertNotEqual(
+            200, response.status_code, f"Student registered with mail {mail}"
+        )
+
+        self.assertEqual(
+            False, Student.objects.filter(Q(mail=mail) | Q(personal_mail=mail)).exists()
+        )
+
+        response = self.register("test@sst.scaler.com")
+        student = Student.objects.filter(mail="test@sst.scaler.com").first()
+        obj = Student.get_object_with_mail(mail)
+
+        self.assertEqual(None, obj)
+
+        student.personal_mail = mail
+        student.save()
+
+        obj = Student.get_object_with_mail(mail)
+
+        self.assertNotEqual(None, obj)
+        self.assertEqual(mail, obj.personal_mail)
+        self.assertEqual("test@sst.scaler.com", obj.mail)

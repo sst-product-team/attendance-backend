@@ -159,18 +159,8 @@ def register(request):
     details["mail"] = data["iss"].lower()
     details["token"] = data["did"]
 
-    if not (
-        details["mail"].endswith("@sst.scaler.com")
-        or details["mail"].endswith("@scaler.com")
-    ):
-        return JsonResponse(
-            {"message": "mail should end with @sst.scaler.com"}, status=400
-        )
-
-    user_object_query = Student.objects.filter(mail=details["mail"])
-    if user_object_query.exists():
-        user_obj = user_object_query.first()
-
+    user_obj = Student.get_object_with_mail(mail=details["mail"])
+    if user_obj:
         if not user_obj.name:
             user_obj.name = details["name"]
             user_obj.save()
@@ -192,7 +182,9 @@ def register(request):
                 {"message": "you can loggin in only one device", "status": "error"},
                 status=400,
             )
-    else:
+    elif details["mail"].endswith("@sst.scaler.com") or details["mail"].endswith(
+        "@scaler.com"
+    ):
         student = Student.objects.create(
             name=details["name"],
             mail=details["mail"],
@@ -203,6 +195,10 @@ def register(request):
 
         if details["mail"].endswith("@scaler.com"):
             student.create_django_user()
+    else:
+        return JsonResponse(
+            {"message": "mail should end with @sst.scaler.com"}, status=400
+        )
 
     details["status"] = "success"
     return JsonResponse(details)

@@ -1,7 +1,7 @@
 from django.core.cache import cache
 from django.db import models
 from django.db.models import Count
-from django.db.models import F
+from django.db.models import F, Q
 from django.utils import timezone
 from enum import Enum
 from django.contrib.auth.models import User
@@ -27,6 +27,9 @@ class Student(models.Model):
     name = models.CharField(max_length=50)
     mail = models.EmailField(
         max_length=80, blank=False, null=False, unique=True, db_index=True
+    )
+    personal_mail = models.EmailField(
+        max_length=80, blank=True, null=True, unique=True, db_index=True
     )
     token = models.CharField(
         max_length=100, blank=True, null=True, unique=True, db_index=True
@@ -59,6 +62,10 @@ class Student(models.Model):
     @classmethod
     def get_object_with_token(cls, token):
         return Student.objects.get(token=token)
+
+    @classmethod
+    def get_object_with_mail(cls, mail):
+        return cls.objects.filter(Q(mail=mail) | Q(personal_mail=mail)).first()
 
     @classmethod
     def get_all_students(cls):

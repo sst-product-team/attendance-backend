@@ -47,6 +47,7 @@
                     <th>Class Name</th>
                     <th>Start Time</th>
                     <th>End Time</th>
+                    <th>Attendance Mandatory</th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -56,6 +57,7 @@
                     <td>{{ attendance_info.name }}</td>
                     <td>{{ attendance_info.class_start_time }}</td>
                     <td>{{ attendance_info.class_end_time }}</td>
+                    <td>{{attendance_info.is_attendance_mandatory}}</td>
 
                     {% if attendance_info.status == 'Present' %}
                     <td class="green">Present</td>

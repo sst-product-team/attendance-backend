@@ -289,8 +289,11 @@ class SubjectClass(models.Model):
         return all_students
 
     @classmethod
-    def get_all_classes(cls):
-        return cls.objects.all()
+    def get_all_classes(cls, include_optional=False):
+        if include_optional:
+            return cls.objects.all()
+        else:
+            return cls.objects.filter(is_attendance_mandatory=True)
 
 
 class ClassAttendance(models.Model):

@@ -416,7 +416,7 @@ def fetchAllStudentAttendances(student):
     if not student:
         return JsonResponse(None, safe=False)
 
-    all_attendance = student.get_all_attendance()
+    all_attendance = student.get_all_attendance(include_optional=False)
 
     json_attendance = []
     subject_pk_set = set()
@@ -438,7 +438,7 @@ def fetchAllStudentAttendances(student):
     }
     response["all_attendance"] = json_attendance
 
-    all_subjects = SubjectClass.get_all_classes()
+    all_subjects = SubjectClass.get_all_classes(include_optional=False)
 
     for subject in all_subjects:
         if subject.pk not in subject_pk_set:

@@ -24,6 +24,26 @@ flake8 .
 
 ## Setup
 
+### Using python.
+
+Make sure that you have +python3.8 installed.
+
+```bash
+pip install -r ./requirements.txt
+```
+
+For sure you will get some errors after running above step fix those and then continue.
+
+```bash
+python manage.py makemigrations
+python manage.py makemigrations attendance
+python manage.py migrate
+python manage.py runserver
+```
+
+After that you have to create superuser and create some dummy data.
+Dummy data can be created using django Fixtures if you are interested raise a PR for that.
+
 ### To build an image.
 ```bash
 docker build -t attendance-backend .

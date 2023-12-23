@@ -2,13 +2,19 @@ name: Django CI
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - "main"
+    paths:
+      - "**.py"
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - "main"
+    paths:
+      - "**.py"
+  workflow_dispatch:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
     strategy:
       max-parallel: 4
@@ -16,23 +22,23 @@ jobs:
         python-version: [3.8, 3.9]
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v3
-      with:
-        python-version: ${{ matrix.python-version }}
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-    - name: Lint Code
-      run: |
-        pip install flake8==6.1.0
-        flake8 .
-    - name: Format Code
-      run: |
-        pip install black==23.11.0
-        black --check .
-    - name: Run Tests
-      run: |
-        python manage.py test
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Lint Code
+        run: |
+          pip install flake8==6.1.0
+          flake8 .
+      - name: Format Code
+        run: |
+          pip install black==23.11.0
+          black --check .
+      - name: Run Tests
+        run: |
+          python manage.py test

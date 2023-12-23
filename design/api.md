@@ -31,14 +31,16 @@ Suggested design for backend API:
 
 ### 2. Retrieve Classes:
 
+All api's accepts both get and post. POST request accepts `did` in param and adds user related details to the class returned by get call.
+
 #### All Classes for Today:
 
 ##### Retrieve Class List
 
-* **Endpoint:** `GET /classes/today`
-* **Description:** Returns a list of class objects for the current day.
-* **Response:** JSON array containing class objects:
-  ```
+- **Endpoint:** `GET /classes/today`
+- **Description:** Returns a list of class objects for the current day.
+- **Response:** JSON array containing class objects:
+  ```json
   [
     {
       "name": "Class 101",
@@ -48,7 +50,23 @@ Suggested design for backend API:
     },
     // Additional class objects...
   ]
+  ```
 
+##### Get All class for a particular date
+
+- **Endpoint:** `GET /classes/<date>`
+- **Description:** Returns a list of class objects for the particular day.
+- **Response:** JSON array containing class objects:
+  ```json
+  [
+    {
+      "name": "Class 101",
+      "class_start_time": "HH:mm:ss",
+      "class_end_time": "HH:mm:ss",
+      "is_attendance_mandatory": true
+    },
+    // Additional class objects...
+  ]
   ```
 
 ##### Retrieve Class List with Attendance status
@@ -63,7 +81,7 @@ Suggested design for backend API:
 - **Response:** JSON object with details of the active class.
 - **Response:** JSON array containing class objects:
 
-```
+```json
 [
   {
     "name": "Class 101",

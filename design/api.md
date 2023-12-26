@@ -8,7 +8,7 @@ Suggested design for backend API:
 - **Request Payload:** JSON object with data
   - `accuracy`
   - `jwtToken` : payload contains `did`
-  - `latitutde`
+  - `latitude`
   - `longitude`
   - `version`
 - **Response:** Status 200 if successful else 400+.

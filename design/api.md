@@ -7,7 +7,7 @@ Suggested design for backend API:
 - **Endpoint:** `POST /mark/geo`
 - **Request Payload:** JSON object with data
   - `accuracy`
-  - `jwtToken`
+  - `jwtToken` : payload contains `did`
   - `latitutde`
   - `longitude`
   - `version`

@@ -515,7 +515,9 @@ def getTodaysClass(request):
         details["attendance_end_time"] = curr_class.attendance_end_time
         details["is_attendance_mandatory"] = curr_class.is_attendance_mandatory
         details["is_in_attendance_window"] = curr_class.is_in_attendance_window()
-        details["attendance_by_bsm"] = not curr_class.is_attendance_by_geo_location_enabled
+        details[
+            "attendance_by_bsm_only"
+        ] = not curr_class.is_attendance_by_geo_location_enabled
         attendance_status = ClassAttendance.get_attendance_status_for(
             student, curr_class
         ).name

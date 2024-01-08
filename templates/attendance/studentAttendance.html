@@ -47,7 +47,12 @@
                     <th>Class Name</th>
                     <th>Start Time</th>
                     <th>End Time</th>
-                    <th>Attendance Mandatory</th>
+                    <th><select id="val">
+                        <option value="None">Attendance Mandatory</option>
+                        <option value="true">True</option>       
+                        <option value="false">False</option>
+                        </select>
+                        </th>
                     <th>Status</th>
                 </tr>
             </thead>
@@ -70,5 +75,39 @@
                 {% endfor %}
             </tbody>
         </table>
+        <script>
+            let option = document.getElementById('val');
+            let rows = document.querySelectorAll('#attendanceData tr');
+
+            option.addEventListener("change",eventListener) 
+
+            function filterrows(value) {
+                for(let i =0; i<rows.length;i++){
+                    let row = rows[i];
+                    let cellvalue = row.cells[3].innerHTML;
+                    if(cellvalue === value || value === "*"){
+                        row.style.display = 'table-row';
+                    }
+                    else{
+                        row.style.display = 'none';
+                    }
+                }
+            }
+
+            function eventListener(){
+                let selectedvalue = option.value;
+                
+                if(selectedvalue === "true"){
+                    filterrows("True")
+                }
+                else if(selectedvalue === "false"){
+                    filterrows("False");
+                }
+                else{
+                    filterrows("*");
+                }
+            }
+            option.value = "None";
+        </script>
     </body>
 </html>

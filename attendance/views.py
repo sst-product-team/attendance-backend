@@ -381,7 +381,8 @@ def getAttendanceView(request, pk):
 
 def studentAttendance(request, mail_prefix):
     student = Student.objects.get(mail__startswith=mail_prefix + "@")
-    response = fetchAllStudentAttendances(student)
+    response = fetchAllStudentAttendances(student, include_optional=True)
+
     for a in response["all_attendance"]:
         if not a["status"]:
             a["status"] = AttendanceStatus.Absent.name
@@ -412,12 +413,11 @@ def studentAttendance(request, mail_prefix):
     )
 
 
-def fetchAllStudentAttendances(student):
+def fetchAllStudentAttendances(student, include_optional=False):
     if not student:
         return JsonResponse(None, safe=False)
 
-    all_attendance = student.get_all_attendance(include_optional=False)
-
+    all_attendance = student.get_all_attendance(include_optional=include_optional)
     json_attendance = []
     subject_pk_set = set()
     for attendance in all_attendance:
@@ -438,7 +438,7 @@ def fetchAllStudentAttendances(student):
     }
     response["all_attendance"] = json_attendance
 
-    all_subjects = SubjectClass.get_all_classes(include_optional=False)
+    all_subjects = SubjectClass.get_all_classes(include_optional=include_optional)
 
     for subject in all_subjects:
         if subject.pk not in subject_pk_set:

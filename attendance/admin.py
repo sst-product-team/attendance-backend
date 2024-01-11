@@ -100,11 +100,17 @@ class StudentAdmin(admin.ModelAdmin):
 class SubjectClassAdmin(admin.ModelAdmin):
     list_display = (
         "__str__",
+        "subject",
         "is_attendance_mandatory",
         "injest_to_scaler",
         "mark_attendance",
         "send_reminder",
     )
+    list_filter = (
+        "subject",
+        "is_attendance_mandatory",
+    )
+    ordering = ["-class_start_time"]
     save_as = True
     search_fields = ["name"]
 

@@ -186,6 +186,9 @@ class Subject(models.Model):
 
 
 class SubjectClass(models.Model):
+    scaler_class_url = models.URLField(max_length=400, blank=True)
+    class_topic_slug = models.CharField(max_length=300, blank=True)
+    super_batch_id = models.PositiveIntegerField(blank=True, null=True)
     name = models.CharField(max_length=50)
     attendance_start_time = models.DateTimeField()
     attendance_end_time = models.DateTimeField(blank=True, null=True)
@@ -204,6 +207,14 @@ class SubjectClass(models.Model):
         return (
             f"{self.class_start_time.astimezone().strftime('%d/%m/%Y')} => {self.name}"
         )
+
+    def parse_slug_super_batch(self):
+        if not self.scaler_class_url:
+            return
+
+        self.super_batch_id = int(self.scaler_class_url.split("/")[5])
+        self.class_topic_slug = self.scaler_class_url.split("/")[7]
+        self.save()
 
     def get_all_students_attendance_status(self):
         allClassAttendance = self.get_all_attendance()

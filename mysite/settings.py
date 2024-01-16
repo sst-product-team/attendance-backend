@@ -31,6 +31,11 @@ JWT_SECRET_KEY = (
     if os.environ.get("JWT_SECRET_KEY")
     else "this_is_not_secret_key"
 )
+ATTENDANCE_INJESTION_SIGNATURE = (
+    os.environ.get("ATTENDANCE_INJESTION_SIGNATURE")
+    if os.environ.get("ATTENDANCE_INJESTION_SIGNATURE")
+    else "this_is_not_secret_key"
+)
 FIREBASE_SERVICE_ACCOUNT_CREDENTIAL = json.loads(
     os.environ.get("FIREBASE_SERVICE_ACCOUNT_CREDENTIAL", "{}")
 )

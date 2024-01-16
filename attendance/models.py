@@ -312,6 +312,7 @@ class ClassAttendance(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE, db_index=True)
     subject = models.ForeignKey(SubjectClass, on_delete=models.CASCADE, db_index=True)
     attendance_status = EnumField(AttendanceStatus, default=AttendanceStatus.Absent)
+    is_injested = models.BooleanField(default=False)
 
     class Meta:
         # Make the combination of student and subject unique
@@ -324,6 +325,16 @@ class ClassAttendance(models.Model):
 
     def __str__(self):
         return self.student.mail + " " + self.subject.name
+
+    def injest_to_scaler(self):
+        from utils.injest_attendance import injest_class_attendance_to_scaler
+
+        if injest_class_attendance_to_scaler(self):
+            self.is_injested = True
+            self.save()
+            return True
+        else:
+            return False
 
     @classmethod
     def get_attendance_status_for(cls, student, subject):

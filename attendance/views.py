@@ -114,6 +114,10 @@ def index(request):
             student, curr_class, lat, lon, accuracy
         )
         if attendance.get_attendance_status() == AttendanceStatus.Present:
+            try:
+                attendance.injest_to_scaler()
+            except Exception as e:
+                pass
             return JsonResponse(
                 {
                     "message": "Your attendance has been marked",

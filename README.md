@@ -2,10 +2,10 @@
 
 ## Frontend Mobile App
 
-If you're looking for the mobile app that complements this backend, check out our [Frontend Mobile App](https://github.com/sst-product-team/attendance-app). It provides a user-friendly interface for managing attendance and viewing reports.
+If you're looking for the mobile app that complements this backend, check out our [Mobile App](https://github.com/sst-product-team/attendance-app/releases/). It provides a user-friendly interface for managing attendance and viewing reports.
 
 ## Preview
-Students attendance report page
+Students attendance report  [page](https://attendancebackend-v9zk.onrender.com/attendance/studentAttendance/kushagra.23bcs10165/)
 <div style="display: flex; justify-content: space-between;">
   <img width="1421" alt="Screenshot 2024-01-16 at 12 56 03 AM" src="https://github.com/sst-product-team/attendance-backend/assets/39624018/4edff32f-69d1-4c2b-988f-f2ef8a443c94">
 </div>

@@ -326,12 +326,17 @@ class ClassAttendance(models.Model):
     def __str__(self):
         return self.student.mail + " " + self.subject.name
 
+    def save(self, injested=False, *args, **kwargs):
+        if not injested:
+            self.is_injested = False
+        super().save(*args, **kwargs)
+
     def injest_to_scaler(self):
         from utils.injest_attendance import injest_class_attendance_to_scaler
 
         if injest_class_attendance_to_scaler(self):
             self.is_injested = True
-            self.save()
+            self.save(injested=True)
             return True
         else:
             return False

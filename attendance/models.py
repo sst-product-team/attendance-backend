@@ -591,6 +591,7 @@ class ProjectConfiguration(models.Model):
     MIN_SUPPORTED_APP_VERSION = models.CharField(max_length=12, default="1.0.0")
     APK_FILE = models.TextField()
     VERSION_NAME = models.CharField(max_length=20, default="")
+    INJEST_ATTENDANCE_IN_REAL_TIME = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
         # Override save to ensure only one instance is saved

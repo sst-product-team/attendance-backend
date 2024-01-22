@@ -339,7 +339,7 @@ def mark_attendance_subject(request, pk):
     attendance = bsm_attendance.class_attendance
     if ProjectConfiguration.get_config().INJEST_ATTENDANCE_IN_REAL_TIME:
         try:
-            if not attendance.class_attendance.injest_to_scaler():
+            if not attendance.injest_to_scaler():
                 print('unable to injest pk', attendance.class_attendance.pk)
         except Exception as e:
             print(e)
@@ -347,7 +347,7 @@ def mark_attendance_subject(request, pk):
     return JsonResponse(
         {
             "mail": mail,
-            "status": attendance.class_attendance.get_attendance_status().name,
+            "status": attendance.get_attendance_status().name,
         }
     )
 

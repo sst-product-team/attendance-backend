@@ -468,7 +468,7 @@ class ClassAttendanceWithGeoLocation(models.Model):
         return str(self.class_attendance)
 
     @classmethod
-    def create_with(cls, student, subject, lat, lon, accuracy, return_obj=False):
+    def create_with(cls, student, subject, lat, lon, accuracy):
         class_attendance, _ = ClassAttendance.objects.get_or_create(
             student=student, subject=subject
         )
@@ -478,19 +478,16 @@ class ClassAttendanceWithGeoLocation(models.Model):
             defaults={"lat": lat, "lon": lon, "accuracy": accuracy},
         )
         attendance.save()
-        if return_obj:
-            return (class_attendance, attendance)
-        return class_attendance
+        return attendance
 
     @classmethod
     def create_from(cls, false_attempt, verified_by):
-        _, obj = cls.create_with(
+        obj = cls.create_with(
             false_attempt.student,
             false_attempt.subject,
             false_attempt.lat,
             false_attempt.lon,
             false_attempt.accuracy,
-            return_obj=True,
         )
         obj.status = "verified"
         obj.verified_by = verified_by
@@ -552,7 +549,7 @@ class ClassAttendanceByBSM(models.Model):
         return self.status_mapping.get(self.status)
 
     @classmethod
-    def create_with(cls, student, subject, status, marked_by, return_obj=False):
+    def create_with(cls, student, subject, status, marked_by):
         class_attendance, _ = ClassAttendance.objects.get_or_create(
             student=student, subject=subject
         )
@@ -562,8 +559,6 @@ class ClassAttendanceByBSM(models.Model):
             defaults={"marked_by": marked_by, "status": status},
         )
         attendance.save()
-        if return_obj:
-            return (class_attendance, attendance)
         return attendance
 
 

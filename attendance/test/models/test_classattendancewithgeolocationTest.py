@@ -33,9 +33,10 @@ class ClassAttendanceWithGeoLocationTest(TestCase):
 
     def test_create_with_method(self):
         lat, lon, accuracy = 12.9715987, 77.5945627, 10.0
-        class_attendance = ClassAttendanceWithGeoLocation.create_with(
+        geo_attendance = ClassAttendanceWithGeoLocation.create_with(
             self.student, self.subject, lat, lon, accuracy
         )
+        class_attendance = geo_attendance.class_attendance
         self.assertEqual(self.student, class_attendance.student)
         self.assertEqual(self.subject, class_attendance.subject)
 
@@ -50,9 +51,10 @@ class ClassAttendanceWithGeoLocationTest(TestCase):
         self.assertEqual(attendance_with_geo.status, "standby")
 
     def test_get_attendance_status_method(self):
-        class_attendance = ClassAttendanceWithGeoLocation.create_with(
+        geo_attendance = ClassAttendanceWithGeoLocation.create_with(
             self.student, self.subject, 12.9715987, 77.5945627, 10.0
         )
+        class_attendance = geo_attendance.class_attendance
         class_attendance.status = "verified"
         class_attendance.save()
         attendance_with_geo = ClassAttendanceWithGeoLocation.objects.get(

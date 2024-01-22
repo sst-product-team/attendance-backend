@@ -53,12 +53,14 @@ class ClassAttendanceTest(TestCase):
     def test_with_geolocation_update(self):
         lat, lon, accuracy = 12.9715987, 77.5945627, 10.0
 
-        class_attendance, geo_attendance = ClassAttendanceWithGeoLocation.create_with(
-            self.student, self.subject, lat, lon, accuracy, return_obj=True
+        geo_attendance = ClassAttendanceWithGeoLocation.create_with(
+            self.student, self.subject, lat, lon, accuracy
         )
-        class_attendance_t, bsm_attendance = ClassAttendanceByBSM.create_with(
-            self.student, self.subject, "present", self.user, return_obj=True
+        class_attendance = geo_attendance.class_attendance
+        bsm_attendance = ClassAttendanceByBSM.create_with(
+            self.student, self.subject, "present", self.user
         )
+        class_attendance_t = bsm_attendance.class_attendance
 
         self.assertEqual(class_attendance, class_attendance_t)
         self.assertEqual(

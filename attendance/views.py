@@ -110,9 +110,10 @@ def index(request):
                     "time": curr_class.attendance_start_time,
                 }
             )
-        attendance = ClassAttendanceWithGeoLocation.create_with(
+        attendance_geo = ClassAttendanceWithGeoLocation.create_with(
             student, curr_class, lat, lon, accuracy
         )
+        attendance = attendance_geo.class_attendance
         if attendance.get_attendance_status() == AttendanceStatus.Present:
             if ProjectConfiguration.get_config().INJEST_ATTENDANCE_IN_REAL_TIME:
                 try:
@@ -332,13 +333,14 @@ def mark_attendance_subject(request, pk):
 
     student = Student.objects.get(mail=mail)
 
-    (class_attendance, attendance) = ClassAttendanceByBSM.create_with(
-        student, curr_class, status, request.user, return_obj=True
+    bsm_attendance = ClassAttendanceByBSM.create_with(
+        student, curr_class, status, request.user
     )
+    attendance = bsm_attendance.class_attendance
     if ProjectConfiguration.get_config().INJEST_ATTENDANCE_IN_REAL_TIME:
         try:
-            if not class_attendance.injest_to_scaler():
-                print('unable to injest pk', class_attendance.pk)
+            if not attendance.class_attendance.injest_to_scaler():
+                print('unable to injest pk', attendance.class_attendance.pk)
         except Exception as e:
             print(e)
 

@@ -24,7 +24,11 @@ def make_http_request(data):
     url = settings.ATTENDANCE_INJESTION_URL
     json_payload = json.dumps(data)
     response = requests.post(url, data=json_payload, headers=headers)
-    return response.status_code == 200
+    if response.status_code == 200:
+        return True
+    else:
+        print(response.text)
+        return False
 
 
 def injest_class_attendance_to_scaler(class_attendance):

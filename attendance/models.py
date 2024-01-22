@@ -208,13 +208,20 @@ class SubjectClass(models.Model):
             f"{self.class_start_time.astimezone().strftime('%d/%m/%Y')} => {self.name}"
         )
 
+    def save(self, *args, **kwargs):
+        if self.scaler_class_url and not self.class_topic_slug:
+            self.parse_slug_super_batch()
+        super().save(*args, **kwargs)
+    
+    def can_injest(self):
+        return self.super_batch_id and self.class_topic_slug 
+
     def parse_slug_super_batch(self):
         if not self.scaler_class_url:
             return
 
         self.super_batch_id = int(self.scaler_class_url.split("/")[5])
         self.class_topic_slug = self.scaler_class_url.split("/")[7]
-        self.save()
 
     def get_all_students_attendance_status(self):
         allClassAttendance = self.get_all_attendance()
@@ -334,11 +341,16 @@ class ClassAttendance(models.Model):
     def injest_to_scaler(self):
         from utils.injest_attendance import injest_class_attendance_to_scaler
 
+        if not self.subject.can_injest():
+            return False
+
         if injest_class_attendance_to_scaler(self):
             self.is_injested = True
             self.save(injested=True)
+            print('injested')
             return True
         else:
+            print('false injested')
             return False
 
     @classmethod

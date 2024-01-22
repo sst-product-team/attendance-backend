@@ -1,6 +1,6 @@
-from django.core.management.base import BaseCommand, CommandError
+from django.core.management.base import BaseCommand
 
-from attendance.models import ClassAttendance, SubjectClass
+from attendance.models import ClassAttendance
 from tqdm import tqdm
 
 

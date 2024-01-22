@@ -117,7 +117,7 @@ def index(request):
             if ProjectConfiguration.get_config().INJEST_ATTENDANCE_IN_REAL_TIME:
                 try:
                     attendance.injest_to_scaler()
-                except Exception as e:
+                except Exception:
                     pass
             return JsonResponse(
                 {
@@ -326,16 +326,21 @@ def mark_attendance_subject(request, pk):
         return JsonResponse({}, status=400)
 
     data = json.loads(request.body)
-    print(data)
+
     mail = data["mail"]
     status = data["status"]
 
     student = Student.objects.get(mail=mail)
 
-    attendance = ClassAttendanceByBSM.create_with(
-        student, curr_class, status, request.user
+    (class_attendance, attendance) = ClassAttendanceByBSM.create_with(
+        student, curr_class, status, request.user, return_obj=True
     )
-    attendance.save()
+    if ProjectConfiguration.get_config().INJEST_ATTENDANCE_IN_REAL_TIME:
+        try:
+            if not class_attendance.injest_to_scaler():
+                print('unable to injest pk', class_attendance.pk)
+        except Exception as e:
+            print(e)
 
     return JsonResponse(
         {
@@ -380,6 +385,7 @@ def getAttendanceView(request, pk):
             "markAttendanceURL": markAttendanceURL,
             "getAttendanceURL": getAttendanceURL,
             "noclass": noclass,
+            "can_mark_attendance": Student.can_mark_attendance(request)
         },
     )
 

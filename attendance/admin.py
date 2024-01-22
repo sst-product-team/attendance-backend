@@ -33,6 +33,7 @@ class ClassAttendanceAdmin(admin.ModelAdmin):
     list_display = ("__str__", "attendance_status")
     list_filter = ("subject", "attendance_status", "student")
     autocomplete_fields = ["student"]
+    readonly_fields = ['is_injested']
 
 
 class FalseAttemptAdmin(admin.ModelAdmin):

@@ -29,6 +29,8 @@ class EndToEndTest(TestCase):
             subject=self.coursesubject,
         )
         self.project_config = ProjectConfiguration.get_config()
+        self.project_config.INJEST_ATTENDANCE_IN_REAL_TIME = True
+        self.project_config.save()
 
     def register(self, mail):
         token = encode_payload(

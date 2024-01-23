@@ -212,9 +212,9 @@ class SubjectClass(models.Model):
         if self.scaler_class_url and not self.class_topic_slug:
             self.parse_slug_super_batch()
         super().save(*args, **kwargs)
-    
+
     def can_injest(self):
-        return self.super_batch_id and self.class_topic_slug 
+        return self.super_batch_id and self.class_topic_slug
 
     def parse_slug_super_batch(self):
         if not self.scaler_class_url:
@@ -347,10 +347,10 @@ class ClassAttendance(models.Model):
         if injest_class_attendance_to_scaler(self):
             self.is_injested = True
             self.save(injested=True)
-            print('injested')
+            print("injested")
             return True
         else:
-            print('false injested')
+            print("false injested")
             return False
 
     @classmethod

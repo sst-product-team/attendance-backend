@@ -11,7 +11,7 @@ headers = {
 
 
 def format_payload(data):
-    return f"{data['user_email']}|{data['class_topic_slug']}|{data['super_batch_id']}|{data['attendance']}"
+    return f"{data['user_email']}|{data['class_topic_slug']}|{data['super_batch_id']}|{data['attendance']}"  # noqa: E501
 
 
 def generate_hmac(key, data, hash_function=hashlib.sha256):

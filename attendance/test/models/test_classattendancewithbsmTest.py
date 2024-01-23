@@ -16,7 +16,7 @@ class ClassAttendanceWithBSMTest(TestCase):
             name="Test Student", mail="teststudent@sst.scaler.com"
         )
         self.attendance_marker_user = User.objects.create_user(
-            username='staff', email='staff@mail.com', password=None
+            username="staff", email="staff@mail.com", password=None
         )
 
         start_time = timezone.datetime(year=2023, month=12, day=8, hour=9, minute=0)
@@ -38,31 +38,30 @@ class ClassAttendanceWithBSMTest(TestCase):
 
     def test_create_with_method_present(self):
         bsm_attendance = ClassAttendanceByBSM.create_with(
-            self.student, self.subject, 'present', self.attendance_marker_user
+            self.student, self.subject, "present", self.attendance_marker_user
         )
         class_attendance = bsm_attendance.class_attendance
         self.assertEqual(self.student, class_attendance.student)
         self.assertEqual(self.subject, class_attendance.subject)
 
         c = ClassAttendance.objects.get(student=self.student, subject=self.subject)
-        attendance_by_bsm = ClassAttendanceByBSM.objects.get(
-            class_attendance=c
-        )
+        attendance_by_bsm = ClassAttendanceByBSM.objects.get(class_attendance=c)
         self.assertIsNotNone(attendance_by_bsm)
-        self.assertEqual(attendance_by_bsm.get_attendance_status(), AttendanceStatus.Present)
+        self.assertEqual(
+            attendance_by_bsm.get_attendance_status(), AttendanceStatus.Present
+        )
 
     def test_create_with_method_absent(self):
         bsm_attendance = ClassAttendanceByBSM.create_with(
-            self.student, self.subject, 'absent', self.attendance_marker_user
+            self.student, self.subject, "absent", self.attendance_marker_user
         )
         class_attendance = bsm_attendance.class_attendance
         self.assertEqual(self.student, class_attendance.student)
         self.assertEqual(self.subject, class_attendance.subject)
 
         c = ClassAttendance.objects.get(student=self.student, subject=self.subject)
-        attendance_by_bsm = ClassAttendanceByBSM.objects.get(
-            class_attendance=c
-        )
+        attendance_by_bsm = ClassAttendanceByBSM.objects.get(class_attendance=c)
         self.assertIsNotNone(attendance_by_bsm)
-        self.assertEqual(attendance_by_bsm.get_attendance_status(), AttendanceStatus.Absent)
-
+        self.assertEqual(
+            attendance_by_bsm.get_attendance_status(), AttendanceStatus.Absent
+        )

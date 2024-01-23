@@ -340,7 +340,7 @@ def mark_attendance_subject(request, pk):
     if ProjectConfiguration.get_config().INJEST_ATTENDANCE_IN_REAL_TIME:
         try:
             if not attendance.injest_to_scaler():
-                print('unable to injest pk', attendance.class_attendance.pk)
+                print("unable to injest pk", attendance.class_attendance.pk)
         except Exception as e:
             print(e)
 
@@ -387,7 +387,7 @@ def getAttendanceView(request, pk):
             "markAttendanceURL": markAttendanceURL,
             "getAttendanceURL": getAttendanceURL,
             "noclass": noclass,
-            "can_mark_attendance": Student.can_mark_attendance(request)
+            "can_mark_attendance": Student.can_mark_attendance(request),
         },
     )
 

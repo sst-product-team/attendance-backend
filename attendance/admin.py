@@ -30,7 +30,7 @@ class ClassAttendanceWithGeoLocationAdmin(admin.ModelAdmin):
 
 
 class ClassAttendanceAdmin(admin.ModelAdmin):
-    list_display = ("__str__", "attendance_status")
+    list_display = ("__str__", "attendance_status", "is_injested")
     list_filter = ("subject", "attendance_status", "student")
     autocomplete_fields = ["student"]
     readonly_fields = ["is_injested"]

@@ -347,10 +347,8 @@ class ClassAttendance(models.Model):
         if injest_class_attendance_to_scaler(self):
             self.is_injested = True
             self.save(injested=True)
-            print("injested")
             return True
         else:
-            print("false injested")
             return False
 
     @classmethod

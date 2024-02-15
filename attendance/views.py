@@ -21,6 +21,10 @@ from django.urls import reverse
 from utils.validate_location import is_in_class
 from utils.pushNotification import pushNotification
 
+import logging
+
+db_logger = logging.getLogger("db")
+
 
 def psp(request, mail_prefix):
     response = []
@@ -321,7 +325,7 @@ def mark_attendance_subject(request, pk):
             },
             status=403,
         )
-
+    db_logger.info(f"Mark Attendance: {request.user.email}: {request.body}")
     curr_class = SubjectClass.objects.get(pk=pk)
     if curr_class is None:
         return JsonResponse({}, status=400)

@@ -50,7 +50,11 @@ class FalseAttemptAdmin(admin.ModelAdmin):
 
 
 class ClassAttendanceByBSMAdmin(admin.ModelAdmin):
-    list_display = ("__str__", "status")  # Add the fields you want to use as filters
+    list_display = (
+        "__str__",
+        "status",
+        "marked_by",
+    )  # Add the fields you want to use as filters
     list_filter = (
         "status",
         "class_attendance__subject",

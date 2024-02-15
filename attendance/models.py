@@ -429,7 +429,7 @@ class ClassAttendanceWithGeoLocation(models.Model):
         "standby": AttendanceStatus.Present,
         "proxy": AttendanceStatus.Proxy,
     }
-
+    date_created = models.DateTimeField(auto_now=True)
     lat = models.DecimalField(max_digits=13, decimal_places=10)
     lon = models.DecimalField(max_digits=13, decimal_places=10)
     accuracy = models.DecimalField(max_digits=13, decimal_places=10)
@@ -521,6 +521,7 @@ class ClassAttendanceByBSM(models.Model):
         "absent": AttendanceStatus.Absent,
     }
 
+    date_created = models.DateTimeField(auto_now=True)
     marked_by = models.ForeignKey(User, on_delete=models.DO_NOTHING)
     class_attendance = models.OneToOneField(
         ClassAttendance, on_delete=models.CASCADE, db_index=True

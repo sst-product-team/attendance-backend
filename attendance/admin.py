@@ -27,9 +27,24 @@ class ClassAttendanceWithGeoLocationAdmin(admin.ModelAdmin):
         "class_attendance__student",
     )  # Add the fields you want to use as filters
     list_editable = ("status",)
+    readonly_fields = ["date_created"]
+
+
+class ClassAttendanceByBSMInlineAdmin(admin.StackedInline):
+    readonly_fields = ["date_created"]
+    model = ClassAttendanceByBSM
+
+
+class ClassAttendanceWithGeoLocationInlineAdmin(admin.StackedInline):
+    readonly_fields = ["date_created"]
+    model = ClassAttendanceWithGeoLocation
 
 
 class ClassAttendanceAdmin(admin.ModelAdmin):
+    inlines = [
+        ClassAttendanceByBSMInlineAdmin,
+        ClassAttendanceWithGeoLocationInlineAdmin,
+    ]
     list_display = ("__str__", "attendance_status", "is_injested")
     list_filter = ("subject", "attendance_status", "student")
     autocomplete_fields = ["student"]
@@ -61,6 +76,7 @@ class ClassAttendanceByBSMAdmin(admin.ModelAdmin):
         "class_attendance__student",
     )  # Add the fields you want to use as filters
     list_editable = ("status",)
+    readonly_fields = ["date_created"]
 
 
 class ProblemSolvingPercentageAdmin(admin.ModelAdmin):

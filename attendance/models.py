@@ -6,6 +6,7 @@ from django.utils import timezone
 from enum import Enum
 from django.contrib.auth.models import User
 from enumfields import EnumField
+import datetime
 
 
 def round_coordinates(num):
@@ -315,8 +316,12 @@ class SubjectClass(models.Model):
 
 
 class ClassAttendance(models.Model):
-    date_updated = models.DateTimeField(auto_now=True)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE, db_index=True)
+    date_updated = models.DateTimeField(default=datetime.datetime.now)
+    student = models.ForeignKey(
+        Student,
+        on_delete=models.CASCADE,
+        db_index=True,
+    )
     subject = models.ForeignKey(SubjectClass, on_delete=models.CASCADE, db_index=True)
     attendance_status = EnumField(AttendanceStatus, default=AttendanceStatus.Absent)
     is_injested = models.BooleanField(default=False)
@@ -336,6 +341,8 @@ class ClassAttendance(models.Model):
     def save(self, injested=False, *args, **kwargs):
         if not injested:
             self.is_injested = False
+            self.date_updated = datetime.datetime.now()
+
         super().save(*args, **kwargs)
 
     def injest_to_scaler(self):

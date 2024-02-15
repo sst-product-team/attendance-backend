@@ -27,16 +27,32 @@ class ClassAttendanceWithGeoLocationAdmin(admin.ModelAdmin):
         "class_attendance__student",
     )  # Add the fields you want to use as filters
     list_editable = ("status",)
-    readonly_fields = ["date_updated"]
+    readonly_fields = [
+        "date_updated",
+        "class_attendance",
+        "status",
+        "lat",
+        "lon",
+        "accuracy",
+        "verified_by",
+    ]
 
 
 class ClassAttendanceByBSMInlineAdmin(admin.StackedInline):
-    readonly_fields = ["date_updated"]
+    readonly_fields = ["date_updated", "marked_by", "class_attendance", "status"]
     model = ClassAttendanceByBSM
 
 
 class ClassAttendanceWithGeoLocationInlineAdmin(admin.StackedInline):
-    readonly_fields = ["date_updated"]
+    readonly_fields = [
+        "date_updated",
+        "class_attendance",
+        "status",
+        "lat",
+        "lon",
+        "accuracy",
+        "verified_by",
+    ]
     model = ClassAttendanceWithGeoLocation
 
 
@@ -48,7 +64,13 @@ class ClassAttendanceAdmin(admin.ModelAdmin):
     list_display = ("__str__", "attendance_status", "is_injested")
     list_filter = ("subject", "attendance_status", "student")
     autocomplete_fields = ["student"]
-    readonly_fields = ["is_injested", "date_updated"]
+    readonly_fields = [
+        "date_updated",
+        "is_injested",
+        "student",
+        "subject",
+        "attendance_status",
+    ]
 
 
 class FalseAttemptAdmin(admin.ModelAdmin):
@@ -75,8 +97,7 @@ class ClassAttendanceByBSMAdmin(admin.ModelAdmin):
         "class_attendance__subject",
         "class_attendance__student",
     )  # Add the fields you want to use as filters
-    list_editable = ("status",)
-    readonly_fields = ["date_updated"]
+    readonly_fields = ["date_updated", "marked_by", "class_attendance", "status"]
 
 
 class ProblemSolvingPercentageAdmin(admin.ModelAdmin):

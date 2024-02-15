@@ -315,7 +315,7 @@ class SubjectClass(models.Model):
 
 
 class ClassAttendance(models.Model):
-    creation_time = models.DateTimeField(auto_now=True)
+    date_created = models.DateTimeField(auto_now=True)
     student = models.ForeignKey(Student, on_delete=models.CASCADE, db_index=True)
     subject = models.ForeignKey(SubjectClass, on_delete=models.CASCADE, db_index=True)
     attendance_status = EnumField(AttendanceStatus, default=AttendanceStatus.Absent)

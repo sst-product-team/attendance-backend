@@ -12,6 +12,8 @@ from attendance.models import (
     ClassAttendanceByBSM,
     ProblemSolvingPercentage,
 )
+from django.utils.html import format_html
+
 
 # Register your models here.
 
@@ -39,8 +41,20 @@ class ClassAttendanceWithGeoLocationAdmin(admin.ModelAdmin):
 
 
 class ClassAttendanceByBSMInlineAdmin(admin.StackedInline):
-    readonly_fields = ["date_updated", "marked_by", "class_attendance", "status"]
+    readonly_fields = [
+        "date_updated",
+        "marked_by",
+        "class_attendance",
+        "status",
+        "change_attendance",
+    ]
     model = ClassAttendanceByBSM
+
+    def change_attendance(self, obj):
+        url = reverse("getAttendanceView", args=[obj.class_attendance.subject.pk])
+        return format_html(
+            """<a class="button" href='%s'>update attendance</a>""" % url
+        )
 
 
 class ClassAttendanceWithGeoLocationInlineAdmin(admin.StackedInline):
@@ -70,7 +84,14 @@ class ClassAttendanceAdmin(admin.ModelAdmin):
         "student",
         "subject",
         "attendance_status",
+        "change_attendance",
     ]
+
+    def change_attendance(self, obj):
+        url = reverse("getAttendanceView", args=[obj.subject.pk])
+        return format_html(
+            """<a class="button" href='%s'>update attendance</a>""" % url
+        )
 
 
 class FalseAttemptAdmin(admin.ModelAdmin):
@@ -78,8 +99,6 @@ class FalseAttemptAdmin(admin.ModelAdmin):
     list_filter = ("subject", "student")  # Add the fields you want to use as filters
 
     def verify(self, obj):
-        from django.utils.html import format_html
-
         return format_html(
             '<a class="button" target="_blank" href="{}">Verify</a>',
             reverse("verify_false_attempt", args=[obj.pk]),
@@ -144,9 +163,7 @@ class SubjectClassAdmin(admin.ModelAdmin):
         "__str__",
         "subject",
         "is_attendance_mandatory",
-        "injest_to_scaler",
         "mark_attendance",
-        "send_reminder",
     )
     list_filter = (
         "subject",
@@ -155,6 +172,8 @@ class SubjectClassAdmin(admin.ModelAdmin):
     ordering = ["-class_start_time"]
     save_as = True
     search_fields = ["name"]
+
+    readonly_fields = ["mark_attendance", "send_reminder", "injest_to_scaler"]
 
     def mark_attendance(self, obj):
         from django.utils.html import format_html

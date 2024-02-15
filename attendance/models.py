@@ -6,7 +6,6 @@ from django.utils import timezone
 from enum import Enum
 from django.contrib.auth.models import User
 from enumfields import EnumField
-import datetime
 
 
 def round_coordinates(num):
@@ -316,7 +315,7 @@ class SubjectClass(models.Model):
 
 
 class ClassAttendance(models.Model):
-    date_updated = models.DateTimeField(default=datetime.datetime.now)
+    date_updated = models.DateTimeField(default=timezone.now)
     student = models.ForeignKey(
         Student,
         on_delete=models.CASCADE,
@@ -341,7 +340,7 @@ class ClassAttendance(models.Model):
     def save(self, injested=False, *args, **kwargs):
         if not injested:
             self.is_injested = False
-            self.date_updated = datetime.datetime.now()
+            self.date_updated = timezone.now()
 
         super().save(*args, **kwargs)
 

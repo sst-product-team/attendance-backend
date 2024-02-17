@@ -20,6 +20,8 @@ from django.shortcuts import render
 from django.urls import reverse
 from utils.validate_location import is_in_class
 from utils.pushNotification import pushNotification
+from django.http import HttpResponse
+import csv
 
 import logging
 
@@ -565,3 +567,29 @@ def verify_false_attempt(request, pk):
     false_attempt = FalseAttemptGeoLocation.objects.get(pk=pk)
     ClassAttendanceWithGeoLocation.create_from(false_attempt, request.user)
     return JsonResponse({"message": "ok"})
+
+
+def download_attendance_csv_for_subject_class(request, pk):
+    query_class = SubjectClass.objects.get(pk=pk)
+    attendanceData = fetchLatestAttendances(query_class)
+    attendanceData = attendanceData["all_attendance"]
+
+    response = HttpResponse(content_type="text/csv")
+    response["Content-Disposition"] = f'attachment; filename="{str(query_class)}.csv"'
+
+    csv_writer = csv.writer(response)
+    csv_writer.writerow(
+        [
+            "",
+            (query_class.subject.name if query_class.subject else "")
+            + " "
+            + str(query_class),
+        ]
+    )
+    attendanceTable = []
+    for at in attendanceData:
+        attendanceTable.append([at["mail"], at["status"]])
+
+    csv_writer.writerows(attendanceTable)
+
+    return response

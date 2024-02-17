@@ -31,11 +31,12 @@ def init_sheet_with_data(sheet):
 
 
 def get_or_create_subject_sheet(sh, subject):
+    title = subject.name if subject else "-"
     try:
-        return sh.worksheet(subject.name), False
+        return sh.worksheet(title), False
     except gspread.exceptions.WorksheetNotFound:
-        sh.add_worksheet(subject.name, rows=1000, cols=1000)
-        return sh.worksheet(subject.name), True
+        sh.add_worksheet(title, rows=1000, cols=1000)
+        return sh.worksheet(title), True
 
 
 def subject_to_col_title(subject_class):

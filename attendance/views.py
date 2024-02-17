@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.core.cache import cache
 from django.http import JsonResponse
 from attendance.models import (
@@ -16,7 +17,7 @@ from django.views.decorators.csrf import csrf_exempt
 from utils.jwt_token_decryption import decode_jwt_token
 import json
 from utils.version_checker import compare_versions
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.urls import reverse
 from utils.validate_location import is_in_class
 from utils.pushNotification import pushNotification
@@ -617,5 +618,30 @@ def sync_todays_class_with_google_drive(request, cron_token):
             sync_subject_class(subject)
             response.append(str(subject.pk) + " " + str(subject))
     return JsonResponse(
-        {"message": f"Synced {len(response)} classes", "subjects": response}
+        {
+            "message": f"Synced {len(response)} classes",
+            "subjects": response,
+            "sheet_link": settings.GOOGLE_SHEET_LINK,
+        }
+    )
+
+
+def sync_class_with_google_sheet_admin(request, pk):
+    if not request.user.is_superuser:
+        return JsonResponse(
+            {
+                "message": "You are not authorized to access this page",
+                "status": "error",
+            },
+            status=403,
+        )
+    curr_class = SubjectClass.objects.get(pk=pk)
+    result = sync_subject_class(curr_class)
+    if result:
+        return redirect(settings.GOOGLE_SHEET_LINK)
+    return JsonResponse(
+        {
+            "message": f"Syncing class {str(curr_class)} result: {result}",
+            "sheet_link": settings.GOOGLE_SHEET_LINK,
+        }
     )

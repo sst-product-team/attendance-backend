@@ -76,6 +76,11 @@ urlpatterns = [
         name="verify_false_attempt",
     ),
     path(
+        "sync_class_with_google_drive/<int:pk>/",
+        views.sync_class_with_google_sheet_admin,
+        name="sync_class_with_google_sheet_admin",
+    ),
+    path(
         "cron/",
         include(
             [

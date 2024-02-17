@@ -16,6 +16,7 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
+from django.shortcuts import redirect, reverse
 
 
 def replyPing(request):
@@ -27,7 +28,10 @@ def getAttendanceView(request):
     from attendance.models import SubjectClass
 
     curr_class = SubjectClass.get_current_class()
-    return views.getAttendanceView(request, curr_class.pk if curr_class else None)
+    if not curr_class:
+        return views.getAttendanceView(request, curr_class.pk if curr_class else None)
+    else:
+        return redirect(reverse("getAttendanceView", args=[curr_class.pk]))
 
 
 urlpatterns = [

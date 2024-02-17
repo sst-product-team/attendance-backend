@@ -178,26 +178,41 @@ class SubjectClassAdmin(admin.ModelAdmin):
     def mark_attendance(self, obj):
         from django.utils.html import format_html
 
-        return format_html(
-            '<a class="button" target="_blank" href="{}">Mark Attendance</a>',
-            reverse("getAttendanceView", args=[obj.pk]),
-        )
+        if obj.pk:
+            return format_html(
+                '<a class="button" target="_blank" href="{}">Mark Attendance</a>',
+                reverse("getAttendanceView", args=[obj.pk]),
+            )
+        else:
+            return format_html(
+                '<a class="button" target="_blank" disabled>Mark Attendance</a>'
+            )
 
     def injest_to_scaler(self, obj):
         from django.utils.html import format_html
 
-        return format_html(
-            '<a class="button" target="_blank" href="{}">Injest to Scaler</a>',
-            reverse("injest_to_scaler", args=[obj.pk]),
-        )
+        if obj.pk:
+            return format_html(
+                '<a class="button" target="_blank" href="{}">Injest to Scaler</a>',
+                reverse("injest_to_scaler", args=[obj.pk]),
+            )
+        else:
+            return format_html(
+                '<a class="button" target="_blank" disabled>Injest to Scaler</a>',
+            )
 
     def send_reminder(self, obj):
         from django.utils.html import format_html
 
-        return format_html(
-            '<a class="button" target="_blank" href="{}">Remind Absenties</a>',
-            reverse("sendReminderForClass", args=[obj.pk]),
-        )
+        if obj.pk:
+            return format_html(
+                '<a class="button" target="_blank" href="{}">Remind Absenties</a>',
+                reverse("sendReminderForClass", args=[obj.pk]),
+            )
+        else:
+            return format_html(
+                '<a class="button" target="_blank" disabled>Remind Absenties</a>'
+            )
 
     def has_change_permission(self, request, obj=None):
         from django.utils import timezone

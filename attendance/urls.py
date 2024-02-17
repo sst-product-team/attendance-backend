@@ -75,4 +75,16 @@ urlpatterns = [
         views.verify_false_attempt,
         name="verify_false_attempt",
     ),
+    path(
+        "cron/",
+        include(
+            [
+                path(
+                    "sync_todays_class_with_google_drive/<str:cron_token>/",
+                    views.sync_todays_class_with_google_drive,
+                    name="sync_todays_class_with_google_drive",
+                ),
+            ]
+        ),
+    ),
 ]

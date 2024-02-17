@@ -609,6 +609,7 @@ class ProjectConfiguration(models.Model):
     APK_FILE = models.TextField()
     VERSION_NAME = models.CharField(max_length=20, default="")
     INJEST_ATTENDANCE_IN_REAL_TIME = models.BooleanField(default=False)
+    CRON_TOKEN = models.CharField(max_length=200, default=None, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         # Override save to ensure only one instance is saved

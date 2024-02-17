@@ -37,6 +37,7 @@ ATTENDANCE_INJESTION_URL = os.environ.get("ATTENDANCE_INJESTION_URL", None)
 FIREBASE_SERVICE_ACCOUNT_CREDENTIAL = json.loads(
     os.environ.get("FIREBASE_SERVICE_ACCOUNT_CREDENTIAL", "{}")
 )
+GOOGLE_SHEET_CREDENTIAL = json.loads(os.environ.get("GOOGLE_SHEET_CREDENTIAL", "null"))
 
 # SECURITY WARNING: don't run with debug turned on in production!
 # DEBUG = True
@@ -188,3 +189,5 @@ LOGGING = {
         },
     },
 }
+
+GOOGLE_SHEET_LINK = os.environ.get("GOOGLE_SHEET_LINK", None)

@@ -20,6 +20,7 @@ from django.shortcuts import render
 from django.urls import reverse
 from utils.validate_location import is_in_class
 from utils.pushNotification import pushNotification
+from utils.push_to_google_sheet import sync_subject_class, can_sync_subject_class
 from django.http import HttpResponse
 import csv
 
@@ -600,3 +601,21 @@ def download_attendance_csv_for_subject_class(request, pk):
     csv_writer.writerows(attendanceTable)
 
     return response
+
+
+def sync_todays_class_with_google_drive(request, cron_token):
+    if (
+        not ProjectConfiguration.get_config().CRON_TOKEN
+        or ProjectConfiguration.get_config().CRON_TOKEN != cron_token
+    ):
+        return JsonResponse({"message": "Forbidden"}, status=403)
+
+    subjects = SubjectClass.get_classes_for()
+    response = []
+    for subject in subjects:
+        if can_sync_subject_class(subject):
+            sync_subject_class(subject)
+            response.append(str(subject.pk) + " " + str(subject))
+    return JsonResponse(
+        {"message": f"Synced {len(response)} classes", "subjects": response}
+    )

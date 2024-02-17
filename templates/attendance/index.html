@@ -1,54 +1,26 @@
 {% load static %}
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Attendance Table</title>
-    <link rel="stylesheet" href="{% static 'attendance/styles.css' %}">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
-        crossorigin="anonymous"></script>
-</head>
-
-<body>
-
-    {% if not noclass %}
-    <div class="heading">
-        <h2 id="Class"></h2>
-        {% if not can_mark_attendance %}
-        <p> ⓘ This page is updated every 5 min</p>
-        <a href="/accounts/login"> login </a>
-        {% endif %}
-        <button id="exportButton" onclick="exportToCSV()">Export to CSV</button>
-
-    </div>
-
-    <table class="table table-striped table-hover table-bordered table-responsive" id="attendanceTable">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Attendance</th>
-            </tr>
-        </thead>
-        <tbody id="attendanceTableBody">
-            <!-- Table rows will be added dynamically using JavaScript -->
-        </tbody>
-    </table>
-    <script>
-        const markAttendanceURL = "{{ markAttendanceURL }}";
-        const getAttendanceURL = "{{ getAttendanceURL }}";
-    </script>
-    <script src="{% static 'attendance/script.js' %}"></script>
-    {% else %}
+<!doctype html>
+<html>
+  <head>
+    <script
+      type="module"
+      src="/static/attendance/index.runtime.9ea32183.js"
+    ></script>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="/static/attendance/index.80947d85.css" rel="stylesheet" />
+  </head>
+  <body>
+    {% if noclass %}
     <p>No class as of now</p>
-    {% endif %}
-</body>
+    {% else %}
 
+    <div id="root">Loading</div>
+    <script type="module" src="/static/attendance/index.ed95fa16.js"></script>
+    <script>
+      const markAttendanceURL = "{{ markAttendanceURL }}";
+      const getAttendanceURL = "{{ getAttendanceURL }}";
+    </script>
+    {% endif %}
+  </body>
 </html>

@@ -81,3 +81,12 @@ class ClassAttendanceBtUrlBSMTest(TestCase):
             subject=self.subject, student=self.student
         )
         self.assertEqual(class_attendance.attendance_status, AttendanceStatus.Present)
+
+    def test_unauthorised_mark_attendance(self):
+        url = reverse("mark_attendance_subject", args=[self.subject.pk])
+        data = {"mail": self.student.mail, "status": "absent"}
+        response = self.client.post(url, data, content_type="application/json")
+
+        self.assertEqual(
+            response.status_code, 403, "UnAuthorised user can mark attendance"
+        )

@@ -627,7 +627,7 @@ def sync_todays_class_with_google_drive(request, cron_token):
 
 
 def sync_class_with_google_sheet_admin(request, pk):
-    if not request.user.is_superuser:
+    if not Student.can_sync_to_gsheet(request):
         return JsonResponse(
             {
                 "message": "You are not authorized to access this page",

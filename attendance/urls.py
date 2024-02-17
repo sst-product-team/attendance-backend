@@ -47,6 +47,11 @@ urlpatterns = [
     ),
     path("getAttendance/<int:pk>/", views.getAttendance, name="getAttendance"),
     path(
+        "getAttendance/<int:pk>/download/",
+        views.download_attendance_csv_for_subject_class,
+        name="downloadAttendance",
+    ),
+    path(
         "getAttendanceView/<int:pk>/", views.getAttendanceView, name="getAttendanceView"
     ),
     path(

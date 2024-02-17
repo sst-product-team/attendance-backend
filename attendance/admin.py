@@ -164,6 +164,7 @@ class SubjectClassAdmin(admin.ModelAdmin):
         "subject",
         "is_attendance_mandatory",
         "mark_attendance",
+        "download_attendance_csv",
     )
     list_filter = (
         "subject",
@@ -186,6 +187,19 @@ class SubjectClassAdmin(admin.ModelAdmin):
         else:
             return format_html(
                 '<a class="button" target="_blank" disabled>Mark Attendance</a>'
+            )
+
+    def download_attendance_csv(self, obj):
+        from django.utils.html import format_html
+
+        if obj.pk:
+            return format_html(
+                '<a class="button" target="_blank" href="{}">Download Csv</a>',
+                reverse("downloadAttendance", args=[obj.pk]),
+            )
+        else:
+            return format_html(
+                '<a class="button" target="_blank" disabled>Download Csv</a>'
             )
 
     def injest_to_scaler(self, obj):

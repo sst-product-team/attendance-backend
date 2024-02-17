@@ -1,5 +1,6 @@
 __pycache__
 migrations
 db.sqlite3
+.venv
 venv
 .attendance-backend

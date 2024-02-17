@@ -321,9 +321,6 @@ def injest_to_scaler(request, pk):
 
 @csrf_exempt
 def mark_attendance_subject(request, pk):
-    from django.contrib.auth.models import User
-
-    request.user = User.objects.first()
     if not Student.can_mark_attendance(request):
         return JsonResponse(
             {

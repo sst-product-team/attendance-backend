@@ -3,6 +3,13 @@ from attendance.models import AttendanceStatus, Student
 from gspread.utils import rowcol_to_a1
 from django.conf import settings
 
+# GSHEEET FORMAT
+# -    ,            ,12 feb 2023    ,  13 feb 2024
+# email,user_name   ,Morning class  , Evening Class
+# mail1, name1      ,1              ,0
+# mail2, name2      ,1              ,1
+# ...  , ...        ,0              ,1
+
 
 def update_range(sheet, data, start_row, start_col):
     range_value = (
@@ -17,7 +24,7 @@ def update_range(sheet, data, start_row, start_col):
 
 
 def init_sheet_with_data(sheet):
-    data = [["email", "name", ""]]
+    data = [["", ""], ["email", "user name"]]
 
     students = Student.get_all_students()
     mail_name = []
@@ -40,16 +47,22 @@ def get_or_create_subject_sheet(sh, subject):
 
 
 def subject_to_col_title(subject_class):
-    return str(subject_class)
+    return (
+        subject_class.class_start_time.strftime("%d %b %Y"),
+        subject_class.name,
+    )
 
 
 def get_col_for_subject_class(sheet, subject_class):
-    title = subject_to_col_title(subject_class)
-    row_values = sheet.row_values(1)
-    for idx, value in enumerate(row_values):
-        if value == title:
-            return idx + 1
-    return len(row_values) + 1
+    PADDING_START = 2
+    (date, title) = subject_to_col_title(subject_class)
+    date_row_values = sheet.row_values(1)[PADDING_START:]
+    title_row_values = sheet.row_values(2)[PADDING_START:]
+    for idx, (row_date, row_title) in enumerate(zip(date_row_values, title_row_values)):
+        print(idx, row_date, row_title, date, title)
+        if row_date == date and row_title == title:
+            return idx + 1 + PADDING_START
+    return len(date_row_values) + 1 + PADDING_START
 
 
 def get_attendance_mapping(mails, subject_class):
@@ -63,9 +76,11 @@ def get_attendance_mapping(mails, subject_class):
     return_status = []
     for mail in mails:
         if mail in status_map:
-            return_status.append(status_map[mail])
+            value = status_map[mail]
         else:
-            return_status.append(0)
+            value = 0
+
+        return_status.append(1 if value else 0)
 
     return return_status
 
@@ -96,10 +111,10 @@ def sync_subject_class(subject_class):
         init_sheet_with_data(sheet)
 
     col = get_col_for_subject_class(sheet, subject_class)
-    mails = sheet.col_values(1)[1:]
+    mails = sheet.col_values(1)[2:]
     attendance_data = get_attendance_mapping(mails, subject_class)
 
-    data = [subject_to_col_title(subject_class)]
+    data = [*subject_to_col_title(subject_class)]
     data.extend(attendance_data)
     update_range(sheet, [[e] for e in data], 1, col)
 

@@ -3,6 +3,7 @@ from django.urls import reverse
 from attendance.models import ClassAttendanceByBSM
 from attendance.models import Student, Subject, SubjectClass
 from django.contrib.auth.models import User
+from datetime import datetime
 from django.utils import timezone
 
 
@@ -29,12 +30,16 @@ class DownloadCsvTest(TestCase):
             name="Test Subject", instructor_name="Test Instructor"
         )
         # Use timezone.now() to get the current time in the test setup
+        date_time = datetime.strptime("18/02/2024", "%d/%m/%Y")
+        default_timezone = timezone.get_default_timezone()
+        date_time = timezone.make_aware(date_time, default_timezone)
+
         self.subject_class = SubjectClass.objects.create(
             name="Test Class",
-            attendance_start_time=timezone.now() + timezone.timedelta(hours=8),
-            attendance_end_time=timezone.now() + timezone.timedelta(hours=9),
-            class_start_time=timezone.now() + timezone.timedelta(hours=8, minutes=30),
-            class_end_time=timezone.now() + timezone.timedelta(hours=9, minutes=30),
+            attendance_start_time=date_time + timezone.timedelta(hours=8),
+            attendance_end_time=date_time + timezone.timedelta(hours=9),
+            class_start_time=date_time + timezone.timedelta(hours=8, minutes=30),
+            class_end_time=date_time + timezone.timedelta(hours=9, minutes=30),
             is_attendance_mandatory=True,
             subject=self.subject,
         )
@@ -75,5 +80,5 @@ class DownloadCsvTest(TestCase):
         self.assertEqual(
             response.content.decode("utf-8"),
             expected_csv_content,
-            response.content.decode("utf-8"),
+            "Download attendance csv not working",
         )

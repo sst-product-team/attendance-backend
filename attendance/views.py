@@ -617,6 +617,8 @@ def sync_todays_class_with_google_drive(request, cron_token):
         if can_sync_subject_class(subject):
             sync_subject_class(subject)
             response.append(str(subject.pk) + " " + str(subject))
+
+    db_logger.info(f"CRON: sync attendance with gsheet for {len(response)} classes")
     return JsonResponse(
         {
             "message": f"Synced {len(response)} classes",

@@ -329,7 +329,12 @@ def mark_attendance_subject(request, pk):
             },
             status=403,
         )
-    db_logger.info(f"Mark Attendance: {request.user.email}: {request.body}")
+    db_logger.info(
+        f"""[Mark Attendance]
+by: {request.user.email},
+body: {request.body},
+url: {request.build_absolute_uri()}"""
+    )
     curr_class = SubjectClass.objects.get(pk=pk)
     if curr_class is None:
         return JsonResponse({}, status=400)

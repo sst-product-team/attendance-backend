@@ -1,11 +1,14 @@
 from attendance.models import ClassAttendanceByBSM
 import rest_framework
-from rest_framework import status, views
+from django.views.decorators.csrf import csrf_exempt
+from rest_framework import views
 from rest_framework.response import Response
 from rest_framework import exceptions
 from rest_framework import serializers
 from attendance.models import Student, SubjectClass
 import json
+from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 import logging
 
 db_logger = logging.getLogger("db")
@@ -48,10 +51,10 @@ class MarkAttendanceByGeoPostInputValidator(serializers.Serializer):
 #        return Response({"message": "Attendance Marked"}, status=status.HTTP_200_OK)
 
 
-class BuldMarkAttendanceByBSMView(views.APIView):
+class BulkMarkAttendanceByBSMView(views.APIView):
     def post(self, request, pk, *args, **kwargs):
         if not Student.can_mark_attendance(request):
-            return JsonResponse(
+            return Response(
                 {
                     "message": "You are not authorized to access this page",
                     "status": "error",
@@ -76,8 +79,21 @@ url: {request.build_absolute_uri()}"""
         else:
             subject = subject.first()
 
+        response = []
         for mailstatus in self.data:
-            student = Student
             mail, status = mailstatus["mail"], mailstatus["status"]
-            ClassAttendanceByBSM.create_with()
-        return Response(status=rest_framework.status.HTTP_200_OK)
+            student = get_object_or_404(Student, mail=mail)
+
+            bsm_attendance = ClassAttendanceByBSM.create_with(
+                student, subject, status, request.user
+            )
+            response.append(
+                {
+                    "mail": mail,
+                    "status": bsm_attendance.class_attendance.attendance_status.name,
+                }
+            )
+        return Response(response, status=rest_framework.status.HTTP_200_OK)
+
+    def get(self, request, pk, *args, **kwargs):
+        return render(request, "attendance/index.html")

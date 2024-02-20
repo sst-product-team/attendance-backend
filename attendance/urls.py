@@ -2,16 +2,21 @@ from django.urls import path, include
 
 from . import views
 from . import cache_clear
-from .v0 import urls
+from .v0 import views as v0_view, urls as v0_urls
 
 urlpatterns = [
-    path("v0/", include(urls.urlpatterns)),
+    path("v0/", include(v0_urls.urlpatterns)),
     path("ping", views.ping, name="index"),
     path("", views.index, name="index"),
     path("student_psp/<str:mail_prefix>/", views.psp, name="getPsp"),
     path("version", views.version, name="index"),
     path("register/", views.register, name="register"),
     path("injest_to_scaler/<int:pk>/", views.injest_to_scaler, name="injest_to_scaler"),
+    path(
+        "injest_to_backend/<int:pk>/",
+        v0_view.mark_attendance.BulkMarkAttendanceByBSMView.as_view(),
+        name="injest_to_backend",
+    ),
     # path("geo/", views.geo, name="register"),
     path(
         "getcurclassattendance/",

@@ -318,7 +318,31 @@ def injest_to_scaler(request, pk):
             status=403,
         )
 
-    return JsonResponse({"PK": pk})
+    attendances = ClassAttendance.objects.filter(
+        is_injested=False,
+        subject__class_topic_slug__gt="",
+        subject__super_batch_id__gt=0,
+        subject__pk=pk,
+    )
+    total_entries = len(attendances)
+
+    success_pk = []
+    failed_pk = []
+    for attendance in attendances:
+        result = attendance.injest_to_scaler()
+        if result:
+            success_pk.append(attendance.pk)
+        else:
+            failed_pk.append(attendance.pk)
+
+    return JsonResponse(
+        {
+            "total_entries": total_entries,
+            "success_count": len(success_pk),
+            "failed_count": len(failed_pk),
+            "failed_pk": failed_pk,
+        }
+    )
 
 
 @csrf_exempt
@@ -368,26 +392,6 @@ url: {request.build_absolute_uri()}"""
 
 
 def builk_mark_attendance(request, pk):
-    if not Student.can_mark_attendance(request):
-        return JsonResponse(
-            {
-                "message": "You are not authorized to access this page",
-                "status": "error",
-            },
-            status=403,
-        )
-    db_logger.info(
-        f"""[Bulk Mark Attendance]
-by: {request.user.email},
-body: {request.body},
-url: {request.build_absolute_uri()}"""
-    )
-    data = json.loads(request.body)
-
-    subject = SubjectClass.objects.get(pk=pk)
-    if curr_class is None:
-        return JsonResponse({}, status=404)
-
     response = []
     for student_date in data:
         student = Student.objects.get(mail=student_date["mail"])

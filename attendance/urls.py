@@ -2,8 +2,10 @@ from django.urls import path, include
 
 from . import views
 from . import cache_clear
+from .v0 import urls
 
 urlpatterns = [
+    path("v0/", include(urls.urlpatterns)),
     path("ping", views.ping, name="index"),
     path("", views.index, name="index"),
     path("student_psp/<str:mail_prefix>/", views.psp, name="getPsp"),

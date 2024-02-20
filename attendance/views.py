@@ -367,6 +367,42 @@ url: {request.build_absolute_uri()}"""
     )
 
 
+def builk_mark_attendance(request, pk):
+    if not Student.can_mark_attendance(request):
+        return JsonResponse(
+            {
+                "message": "You are not authorized to access this page",
+                "status": "error",
+            },
+            status=403,
+        )
+    db_logger.info(
+        f"""[Bulk Mark Attendance]
+by: {request.user.email},
+body: {request.body},
+url: {request.build_absolute_uri()}"""
+    )
+    data = json.loads(request.body)
+
+    subject = SubjectClass.objects.get(pk=pk)
+    if curr_class is None:
+        return JsonResponse({}, status=404)
+
+    response = []
+    for student_date in data:
+        student = Student.objects.get(mail=student_date["mail"])
+        bsm_attendance = ClassAttendanceByBSM.create_with(
+            student, subject, student_date["status"], request.user
+        )
+        response.append(
+            {
+                "mail": student.mail,
+                "status": bsm_attendance.class_attendance.attendance_status.name,
+            }
+        )
+    return JsonResponse(response, safe=False)
+
+
 def getAttendance(request, pk):
     cache_key = f"get_current_class_attendance_{pk}"
     if not request.user.is_staff:

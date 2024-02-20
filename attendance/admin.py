@@ -165,6 +165,7 @@ class SubjectClassAdmin(admin.ModelAdmin):
         "is_attendance_mandatory",
         "mark_attendance",
         "download_attendance_csv",
+        "sync_with_gsheet",
     )
     list_filter = (
         "subject",
@@ -174,7 +175,25 @@ class SubjectClassAdmin(admin.ModelAdmin):
     save_as = True
     search_fields = ["name"]
 
-    readonly_fields = ["mark_attendance", "send_reminder", "injest_to_scaler"]
+    readonly_fields = [
+        "mark_attendance",
+        "send_reminder",
+        "injest_to_scaler",
+        "sync_with_gsheet",
+    ]
+
+    def sync_with_gsheet(self, obj):
+        from django.utils.html import format_html
+
+        if obj.pk:
+            return format_html(
+                '<a class="button" target="_blank" href="{}">Sync to gsheet</a>',
+                reverse("sync_class_with_google_sheet_admin", args=[obj.pk]),
+            )
+        else:
+            return format_html(
+                '<a class="button" target="_blank" disabled>Sync to gsheet</a>'
+            )
 
     def mark_attendance(self, obj):
         from django.utils.html import format_html

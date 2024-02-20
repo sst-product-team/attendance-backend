@@ -51,6 +51,10 @@ class Student(models.Model):
     def can_verify_false_attempt(cls, request):
         return request.user.has_perm("attendance.verify_false_attempt")
 
+    @classmethod
+    def can_sync_to_gsheet(cls, request):
+        return request.user.has_perm("attendance.can_sync_to_gsheet")
+
     def get_id_number(self):
         if self.mail.endswith("@scaler.com"):
             return None
@@ -609,6 +613,12 @@ class ProjectConfiguration(models.Model):
     APK_FILE = models.TextField()
     VERSION_NAME = models.CharField(max_length=20, default="")
     INJEST_ATTENDANCE_IN_REAL_TIME = models.BooleanField(default=False)
+    CRON_TOKEN = models.CharField(max_length=200, default=None, null=True, blank=True)
+
+    class Meta:
+        permissions = [
+            ("can_sync_to_gsheet", "Can Sync Attendance with Gsheet"),
+        ]
 
     def save(self, *args, **kwargs):
         # Override save to ensure only one instance is saved

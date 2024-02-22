@@ -213,7 +213,7 @@ class SubjectClass(models.Model):
         )
 
     def save(self, *args, **kwargs):
-        if self.scaler_class_url and not self.class_topic_slug:
+        if self.scaler_class_url:
             self.parse_slug_super_batch()
         super().save(*args, **kwargs)
 

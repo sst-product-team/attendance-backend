@@ -180,6 +180,7 @@ class SubjectClassAdmin(admin.ModelAdmin):
         "send_reminder",
         "injest_to_scaler",
         "sync_with_gsheet",
+        "injest_to_backend",
     ]
 
     def sync_with_gsheet(self, obj):
@@ -206,6 +207,19 @@ class SubjectClassAdmin(admin.ModelAdmin):
         else:
             return format_html(
                 '<a class="button" target="_blank" disabled>Mark Attendance</a>'
+            )
+
+    def injest_to_backend(self, obj):
+        from django.utils.html import format_html
+
+        if obj.pk:
+            return format_html(
+                '<a class="button" target="_blank" href="{}">Injest to Backend</a>',
+                reverse("injest_to_backend", args=[obj.pk]),
+            )
+        else:
+            return format_html(
+                '<a class="button" target="_blank" disabled>Injest to Backend</a>'
             )
 
     def download_attendance_csv(self, obj):

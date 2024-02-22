@@ -318,7 +318,31 @@ def injest_to_scaler(request, pk):
             status=403,
         )
 
-    return JsonResponse({"PK": pk})
+    attendances = ClassAttendance.objects.filter(
+        is_injested=False,
+        subject__class_topic_slug__gt="",
+        subject__super_batch_id__gt=0,
+        subject__pk=pk,
+    )
+    total_entries = len(attendances)
+
+    success_pk = []
+    failed_pk = []
+    for attendance in attendances:
+        result = attendance.injest_to_scaler()
+        if result:
+            success_pk.append(attendance.pk)
+        else:
+            failed_pk.append(attendance.pk)
+
+    return JsonResponse(
+        {
+            "total_entries": total_entries,
+            "success_count": len(success_pk),
+            "failed_count": len(failed_pk),
+            "failed_pk": failed_pk,
+        }
+    )
 
 
 @csrf_exempt

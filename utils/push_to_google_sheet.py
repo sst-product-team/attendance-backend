@@ -37,8 +37,8 @@ def init_sheet_with_data(sheet):
     update_range(sheet, data, 1, 1)
 
 
-def get_or_create_subject_sheet(sh, subject):
-    title = subject.name if subject else "-"
+def get_or_create_subject_sheet(sh, name):
+    title = name if name else "-"
     try:
         return sh.worksheet(title), False
     except gspread.exceptions.WorksheetNotFound:
@@ -101,16 +101,7 @@ def can_sync_subject_class(subject_class):
     return hasattr(subject_class, "subject")
 
 
-def sync_subject_class(subject_class):
-    sh = get_spreadsheet()
-    if not sh:
-        return False
-
-    sheet, created = get_or_create_subject_sheet(sh, subject_class.subject)
-    if created:
-        init_sheet_with_data(sheet)
-
-    col = get_col_for_subject_class(sheet, subject_class)
+def push_attendance_to_sheet(sheet, col, subject_class):
     mails = sheet.col_values(1)[2:]
     attendance_data = get_attendance_mapping(mails, subject_class)
 
@@ -119,3 +110,28 @@ def sync_subject_class(subject_class):
     update_range(sheet, [[e] for e in data], 1, col)
 
     return True
+
+
+def sync_subject_class(subject_class):
+    sh = get_spreadsheet()
+    if not sh:
+        return False
+
+    sheet, created = get_or_create_subject_sheet(
+        sh, subject_class.subject.name if subject_class.subject else None
+    )
+    if created:
+        init_sheet_with_data(sheet)
+
+    col = get_col_for_subject_class(sheet, subject_class)
+
+    ret1 = push_attendance_to_sheet(sheet, col, subject_class)
+
+    sheet, created = get_or_create_subject_sheet(sh, "All")
+    if created:
+        init_sheet_with_data(sheet)
+
+    col = get_col_for_subject_class(sheet, subject_class)
+    ret2 = push_attendance_to_sheet(sheet, col, subject_class)
+
+    return ret1 and ret2

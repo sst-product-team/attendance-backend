@@ -55,6 +55,10 @@ class Student(models.Model):
     def can_sync_to_gsheet(cls, request):
         return request.user.has_perm("attendance.can_sync_to_gsheet")
 
+    @classmethod
+    def can_injest_to_scaler(cls, request):
+        return request.user.has_perm("attendance.can_injest_to_scaler")
+
     def get_id_number(self):
         if self.mail.endswith("@scaler.com"):
             return None
@@ -336,6 +340,7 @@ class ClassAttendance(models.Model):
             ("can_mark_attendance", "Can Mark Attendance"),
             ("can_send_notifications", "Can Send Notifications"),
             ("verify_false_attempt", "Verify False Attempt GeoLocation"),
+            ("can_injest_to_scaler", "Can Injest to Scaler"),
         ]
 
     def __str__(self):

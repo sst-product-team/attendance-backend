@@ -309,7 +309,7 @@ def getcurclassattendance(request):
 
 
 def injest_to_scaler(request, pk):
-    if not request.user.is_superuser:
+    if not Student.can_injest_to_scaler(request):
         return JsonResponse(
             {
                 "message": "You are not authorized to access this page",

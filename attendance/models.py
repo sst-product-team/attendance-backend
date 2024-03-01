@@ -185,6 +185,23 @@ class Student(models.Model):
         return result
 
 
+class StudentGroup(models.Model):
+    name = models.CharField(max_length=50)
+    students = models.ManyToManyField(Student, through="StudentGroupItem")
+
+    def __str__(self):
+        return self.name
+
+
+class StudentGroupItem(models.Model):
+    student_group = models.ForeignKey(StudentGroup, on_delete=models.CASCADE)
+    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    join_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("student", "student_group")
+
+
 class Subject(models.Model):
     name = models.CharField(max_length=50)
     instructor_name = models.CharField(max_length=25)
@@ -320,6 +337,20 @@ class SubjectClass(models.Model):
             return cls.objects.all()
         else:
             return cls.objects.filter(is_attendance_mandatory=True)
+
+
+class SubjectClassStudentGroups(models.Model):
+    class AttendancePolicy(Enum):
+        Mandatory = 0
+        Recommended = 1
+        Optional = 2
+
+    subject_class = models.ForeignKey(SubjectClass, on_delete=models.CASCADE)
+    student_group = models.ForeignKey(StudentGroup, on_delete=models.CASCADE)
+    attendance_policy = EnumField(AttendancePolicy, default=AttendancePolicy.Mandatory)
+
+    class Meta:
+        unique_together = ("subject_class", "student_group")
 
 
 class ClassAttendance(models.Model):

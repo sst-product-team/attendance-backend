@@ -317,6 +317,23 @@ def injest_to_scaler(request, pk):
             },
             status=403,
         )
+    subject = SubjectClass.objects.filter(pk=pk)
+
+    if not subject.exists():
+        return JsonResponse(
+            {"message": "Class not found", "status": "error"}, status=404
+        )
+    else:
+        subject = subject.first()
+
+    if not subject.can_injest():
+        return JsonResponse(
+            {
+                "message": "Class not linked with Scaler properly",
+                "status": "error",
+            },
+            status=403,
+        )
 
     attendances = ClassAttendance.objects.filter(
         is_injested=False,

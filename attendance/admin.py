@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import reverse
 from attendance.models import (
     Student,
+    StudentGroup,
+    StudentGroupItem,
     Subject,
     SubjectClass,
     ClassAttendance,
@@ -11,6 +13,7 @@ from attendance.models import (
     FalseAttemptGeoLocation,
     ClassAttendanceByBSM,
     ProblemSolvingPercentage,
+    SubjectClassStudentGroups,
 )
 from django.utils.html import format_html
 
@@ -158,7 +161,13 @@ class StudentAdmin(admin.ModelAdmin):
     send_notification.short_description = "Send Reminder"
 
 
+class SubjectClassStudentGroupsInline(admin.TabularInline):
+    model = SubjectClassStudentGroups
+    autocomplete_fields = ["student_group"]
+
+
 class SubjectClassAdmin(admin.ModelAdmin):
+    inlines = [SubjectClassStudentGroupsInline]
     list_display = (
         "__str__",
         "subject",
@@ -275,6 +284,17 @@ class SubjectClassAdmin(admin.ModelAdmin):
         return super().has_change_permission(request, obj=obj)
 
 
+class StudentGroupItemInline(admin.TabularInline):
+    model = StudentGroupItem
+    autocomplete_fields = ["student"]
+
+
+class StudentGroupAdmin(admin.ModelAdmin):
+    inlines = [StudentGroupItemInline]
+    search_fields = ["name"]
+
+
+admin.site.register(StudentGroup, StudentGroupAdmin)
 admin.site.register(ProblemSolvingPercentage, ProblemSolvingPercentageAdmin)
 admin.site.register(ClassAttendanceByBSM, ClassAttendanceByBSMAdmin)
 admin.site.register(Student, StudentAdmin)

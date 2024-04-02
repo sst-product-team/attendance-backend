@@ -261,19 +261,6 @@ class SubjectClassAdmin(admin.ModelAdmin):
                 '<a class="button" target="_blank" disabled>Remind Absenties</a>'
             )
 
-    def has_change_permission(self, request, obj=None):
-        from django.utils import timezone
-
-        current_time = timezone.now()
-
-        if (
-            obj is not None
-            and obj.class_end_time < current_time
-            and not request.user.is_superuser
-        ):
-            return False
-        return super().has_change_permission(request, obj=obj)
-
 
 admin.site.register(ProblemSolvingPercentage, ProblemSolvingPercentageAdmin)
 admin.site.register(ClassAttendanceByBSM, ClassAttendanceByBSMAdmin)

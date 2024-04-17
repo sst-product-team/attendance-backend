@@ -1,6 +1,6 @@
 from django.core.cache import cache
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Min
 from django.db.models import F, Q
 from django.utils import timezone
 from enum import Enum
@@ -240,6 +240,18 @@ class SubjectClass(models.Model):
 
     def can_injest(self):
         return self.super_batch_id and self.class_topic_slug
+
+    def get_all_students_group(self):
+        return SubjectClassStudentGroups.objects.filter(subject_class=self)
+
+    def get_all_students(self):
+        return Student.objects.filter(
+            studentgroupitem__student_group__subjectclassstudentgroups__subject_class=self
+        ).annotate(
+            min_attendance_policy=Min(
+                "studentgroupitem__student_group__subjectclassstudentgroups__attendance_policy"
+            )
+        )
 
     def parse_slug_super_batch(self):
         if not self.scaler_class_url:

@@ -36,6 +36,10 @@ After that you can load dummy data. Run below command in a different shell.
 python manage.py loaddata ./fixture.json
 ```
 
+After loading fixtures you can use following credencials to loggin
+username: diwakar.gupta@scaler.com
+password: password
+
 ### Lint & Formatting
 We use `flake8==6.1.0` as a linter and `black==23.11.0` as a code formatter
 

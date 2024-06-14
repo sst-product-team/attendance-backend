@@ -268,7 +268,7 @@ def fetchLatestAttendances(
     response["current_class"] = details
     response["all_attendance"] = json_attendance
 
-    all_students = Student.get_all_students()
+    all_students = current_class.get_all_students()
 
     for student in all_students:
         if student.mail not in mail_set:

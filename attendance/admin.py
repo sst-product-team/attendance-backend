@@ -294,7 +294,7 @@ class StudentGroupAdmin(admin.ModelAdmin):
     search_fields = ["name"]
 
 
-admin.site.register(SubjectClassStudentGroups)
+# admin.site.register(SubjectClassStudentGroups)
 admin.site.register(StudentGroup, StudentGroupAdmin)
 admin.site.register(ProblemSolvingPercentage, ProblemSolvingPercentageAdmin)
 admin.site.register(ClassAttendanceByBSM, ClassAttendanceByBSMAdmin)

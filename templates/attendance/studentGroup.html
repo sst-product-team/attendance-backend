@@ -1,0 +1,60 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Groups</title>
+</head>
+<body>
+    <h1>Student Groups</h1>
+
+    <label for="student-group">Select Student Group:</label>
+    <select id="student-group">
+        {% for group in student_groups %}
+            <option value="{{ group.pk }}">{{ group.name }}</option>
+        {% endfor %}
+    </select>
+
+    <label for="email-list">Email Addresses:</label>
+    <textarea id="email-list" rows="5"></textarea>
+
+    <button onclick="sendEmails()">Submit</button>
+
+    <div id="response"></div>
+
+    <script>
+        function sendEmails() {
+            const studentGroupPk = document.getElementById('student-group').value;
+            const emailList = document.getElementById('email-list').value.split('\n').map(email => email.trim().toLowerCase());
+        
+            const data = {
+                student_group_pk: studentGroupPk,
+                email_list: emailList
+            };
+        
+            fetch('/attendance/student_group/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('Request failed with status ' + response.status);
+                }
+            })
+            .then(responseText => {
+                document.getElementById('response').textContent = responseText;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('response').textContent = 'An error occurred while sending emails.';
+            });
+        }
+    </script>
+</body>
+</html>

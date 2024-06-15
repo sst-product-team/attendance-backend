@@ -260,7 +260,9 @@ def fetchLatestAttendances(
             {
                 "mail": student.mail,
                 "name": student.name,
-                "status": attendance.attendance_status.name if attendance else setForUnavailable,
+                "status": attendance.attendance_status.name
+                if attendance
+                else setForUnavailable,
             }
         )
     response = {}

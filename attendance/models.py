@@ -1,7 +1,6 @@
 from django.core.cache import cache
 from django.db import models
-from django.db.models import Count, Min
-from django.db.models import F, Q
+from django.db.models import Count, F, Q, Min, Prefetch, OuterRef, Subquery
 from django.utils import timezone
 from enum import Enum
 from django.contrib.auth.models import User
@@ -243,63 +242,78 @@ class SubjectClass(models.Model):
 
     def get_all_students_group(self):
         return SubjectClassStudentGroups.objects.filter(subject_class=self)
-    
+
     def get_students_with_prioritized_attendance_policy(self):
-        from django.db.models import Min, OuterRef, Subquery
-        from attendance.models import Student, SubjectClassStudentGroups
         subject_class_instance = self
 
-        subject_class_student_groups = subject_class_instance.subjectclassstudentgroups_set.all().values('student_group_id', 'attendance_policy')
+        subject_class_student_groups = (
+            subject_class_instance.subjectclassstudentgroups_set.all().values(
+                "student_group_id", "attendance_policy"
+            )
+        )
 
         # Subquery to get the minimum attendance policy for each student group
         min_attendance_policy_subquery = subject_class_student_groups.annotate(
             min_policy=Subquery(
                 SubjectClassStudentGroups.objects.filter(
-                    student_group_id=OuterRef('student_group_id')
-                ).order_by('attendance_policy').values('attendance_policy')[:1]
+                    student_group_id=OuterRef("student_group_id")
+                )
+                .order_by("attendance_policy")
+                .values("attendance_policy")[:1]
             )
-        ).values('student_group_id', 'min_policy')
+        ).values("student_group_id", "min_policy")
 
         students = Student.objects.filter(
-            studentgroupitem__student_group__in=subject_class_student_groups.values_list('student_group_id', flat=True)
+            studentgroupitem__student_group__in=subject_class_student_groups.values_list(  # noqa: E501
+                "student_group_id", flat=True
+            )
         ).annotate(
             prioritized_attendance_policy=Min(
                 Subquery(
                     min_attendance_policy_subquery.filter(
-                        student_group_id=OuterRef('studentgroupitem__student_group_id')
-                    ).values('min_policy')
+                        student_group_id=OuterRef("studentgroupitem__student_group_id")
+                    ).values("min_policy")
                 )
             )
         )
-        
+
         return students
 
-    
     def get_all_students(self):
-        from django.db.models import OuterRef, Subquery
-        from attendance.models import Student, SubjectClassStudentGroups
         subject_class_instance = self
 
-        subject_class_student_groups = subject_class_instance.subjectclassstudentgroups_set.all().values('student_group_id', 'attendance_policy')
+        subject_class_student_groups = (
+            subject_class_instance.subjectclassstudentgroups_set.all().values(
+                "student_group_id", "attendance_policy"
+            )
+        )
 
         # Subquery to get the minimum attendance policy for each student group
         min_attendance_policy_subquery = subject_class_student_groups.annotate(
             min_policy=Subquery(
                 SubjectClassStudentGroups.objects.filter(
-                    student_group_id=OuterRef('student_group_id')
-                ).order_by('attendance_policy').values('attendance_policy')[:1]
+                    student_group_id=OuterRef("student_group_id")
+                )
+                .order_by("attendance_policy")
+                .values("attendance_policy")[:1]
             )
-        ).values('student_group_id', 'min_policy')
+        ).values("student_group_id", "min_policy")
 
-        students = Student.objects.filter(
-            studentgroupitem__student_group__in=subject_class_student_groups.values_list('student_group_id', flat=True)
-        ).annotate(
-            prioritized_attendance_policy=Subquery(
-                min_attendance_policy_subquery.filter(
-                    student_group_id=OuterRef('studentgroupitem__student_group_id')
-                ).values('min_policy')[:1]
+        students = (
+            Student.objects.filter(
+                studentgroupitem__student_group__in=subject_class_student_groups.values_list(  # noqa: E501
+                    "student_group_id", flat=True
+                )
             )
-        ).distinct()
+            .annotate(
+                prioritized_attendance_policy=Subquery(
+                    min_attendance_policy_subquery.filter(
+                        student_group_id=OuterRef("studentgroupitem__student_group_id")
+                    ).values("min_policy")[:1]
+                )
+            )
+            .distinct()
+        )
         return students
 
     def parse_slug_super_batch(self):
@@ -387,38 +401,55 @@ class SubjectClass(models.Model):
         )
 
     def get_all_attendance(self):
-        from django.db.models import Min, Prefetch, OuterRef, Subquery, Value, Case, When, IntegerField
-        from django.db.models.functions import Coalesce
-        
         subject_class_instance = self
 
-        subject_class_student_groups = subject_class_instance.subjectclassstudentgroups_set.all().values('student_group_id', 'attendance_policy')
+        subject_class_student_groups = (
+            subject_class_instance.subjectclassstudentgroups_set.all().values(
+                "student_group_id", "attendance_policy"
+            )
+        )
 
         # Subquery to get the minimum attendance policy for each student group
         min_attendance_policy_subquery = subject_class_student_groups.annotate(
             min_policy=Subquery(
                 SubjectClassStudentGroups.objects.filter(
-                    student_group_id=OuterRef('student_group_id')
-                ).order_by('attendance_policy').values('attendance_policy')[:1]
+                    student_group_id=OuterRef("student_group_id")
+                )
+                .order_by("attendance_policy")
+                .values("attendance_policy")[:1]
             )
-        ).values('student_group_id', 'min_policy')
+        ).values("student_group_id", "min_policy")
 
-        student_group_ids = subject_class_student_groups.values_list('student_group_id', flat=True)
+        student_group_ids = subject_class_student_groups.values_list(
+            "student_group_id", flat=True
+        )
 
-        students_with_attendance = Student.objects.filter(
-            studentgroupitem__student_group_id__in=student_group_ids
-        ).annotate(
-            prioritized_attendance_policy=Min(
-                Subquery(
-                    min_attendance_policy_subquery.filter(
-                        student_group_id=OuterRef('studentgroupitem__student_group_id')
-                    ).values('min_policy')
+        students_with_attendance = (
+            Student.objects.filter(
+                studentgroupitem__student_group_id__in=student_group_ids
+            )
+            .annotate(
+                prioritized_attendance_policy=Min(
+                    Subquery(
+                        min_attendance_policy_subquery.filter(
+                            student_group_id=OuterRef(
+                                "studentgroupitem__student_group_id"
+                            )
+                        ).values("min_policy")
+                    )
                 )
             )
-        ).prefetch_related(
-            Prefetch('classattendance_set', queryset=ClassAttendance.objects.filter(subject=subject_class_instance), to_attr='attendance_obj')
+            .prefetch_related(
+                Prefetch(
+                    "classattendance_set",
+                    queryset=ClassAttendance.objects.filter(
+                        subject=subject_class_instance
+                    ),
+                    to_attr="attendance_obj",
+                )
+            )
         )
-        
+
         for student in students_with_attendance:
             if student.attendance_obj:
                 student.attendance = student.attendance_obj[0]
@@ -441,8 +472,12 @@ class SubjectClassStudentGroups(models.Model):
         Recommended = 1
         Optional = 2
 
-    subject_class = models.ForeignKey(SubjectClass, on_delete=models.CASCADE, db_index=True)
-    student_group = models.ForeignKey(StudentGroup, on_delete=models.CASCADE, db_index=True)
+    subject_class = models.ForeignKey(
+        SubjectClass, on_delete=models.CASCADE, db_index=True
+    )
+    student_group = models.ForeignKey(
+        StudentGroup, on_delete=models.CASCADE, db_index=True
+    )
     attendance_policy = EnumField(AttendancePolicy, default=AttendancePolicy.Mandatory)
 
     class Meta:

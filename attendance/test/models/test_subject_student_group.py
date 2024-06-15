@@ -1,6 +1,7 @@
 from django.test import TestCase
 from attendance.models import SubjectClass, SubjectClassStudentGroups
 
+
 def get_students_from_group_ids(group_ids):
     from django.db.models import Q
     from attendance.models import Student, StudentGroup, StudentGroupItem
@@ -36,11 +37,18 @@ class SubjectStudentGroupTest(TestCase):
         
         output = {}
         for e in students_with_policy:
-            output[e.mail] = e.prioritized_attendance_policy
+            if e.mail in output:
+                self.fail('multiple instances of same student found')
+            else:
+                output[e.mail] = e.prioritized_attendance_policy
         
         expected = {
             "diwakar.gupta@scaler.com": SubjectClassStudentGroups.AttendancePolicy.Optional,
             "kushagra.23bcs10165@sst.scaler.com": SubjectClassStudentGroups.AttendancePolicy.Mandatory,
             "pritam.23bcs10108@sst.scaler.com": SubjectClassStudentGroups.AttendancePolicy.Recommended
         }
-        self.assertEqual(output, expected, "attendance priority in grould not working")
+        
+        self.assertEqual(expected.keys(), output.keys(), "output has different student groups")
+        
+        for key in list(expected.keys()):
+            self.assertEqual(expected[key], output[key], "Prioritised attendance policy incorrect")

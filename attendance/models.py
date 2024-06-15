@@ -245,8 +245,8 @@ class SubjectClass(models.Model):
         return SubjectClassStudentGroups.objects.filter(subject_class=self)
     
     def get_students_with_prioritized_attendance_policy(self):
-        from django.db.models import Prefetch, OuterRef, Subquery
-        from attendance.models import Student, SubjectClass, StudentGroupItem, SubjectClassStudentGroups
+        from django.db.models import Min, OuterRef, Subquery
+        from attendance.models import Student, SubjectClassStudentGroups
         subject_class_instance = self
 
         subject_class_student_groups = subject_class_instance.subjectclassstudentgroups_set.all().values('student_group_id', 'attendance_policy')
@@ -263,13 +263,15 @@ class SubjectClass(models.Model):
         students = Student.objects.filter(
             studentgroupitem__student_group__in=subject_class_student_groups.values_list('student_group_id', flat=True)
         ).annotate(
-            prioritized_attendance_policy=Subquery(
-                min_attendance_policy_subquery.filter(
-                    student_group_id=OuterRef('studentgroupitem__student_group_id')
-                ).values('min_policy')[:1]
+            prioritized_attendance_policy=Min(
+                Subquery(
+                    min_attendance_policy_subquery.filter(
+                        student_group_id=OuterRef('studentgroupitem__student_group_id')
+                    ).values('min_policy')
+                )
             )
-        ).distinct()
-
+        )
+        
         return students
 
     

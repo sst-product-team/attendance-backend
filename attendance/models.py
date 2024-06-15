@@ -193,8 +193,10 @@ class StudentGroup(models.Model):
 
 
 class StudentGroupItem(models.Model):
-    student_group = models.ForeignKey(StudentGroup, on_delete=models.CASCADE)
-    student = models.ForeignKey(Student, on_delete=models.CASCADE)
+    student_group = models.ForeignKey(
+        StudentGroup, on_delete=models.CASCADE, db_index=True
+    )
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, db_index=True)
     join_date = models.DateTimeField(auto_now_add=True)
 
     class Meta:

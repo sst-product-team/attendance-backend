@@ -387,10 +387,45 @@ class SubjectClass(models.Model):
         )
 
     def get_all_attendance(self):
-        all_students = (
-            ClassAttendance.objects.filter(subject=self).select_related("student").all()
+        from django.db.models import Min, Prefetch, OuterRef, Subquery, Value, Case, When, IntegerField
+        from django.db.models.functions import Coalesce
+        
+        subject_class_instance = self
+
+        subject_class_student_groups = subject_class_instance.subjectclassstudentgroups_set.all().values('student_group_id', 'attendance_policy')
+
+        # Subquery to get the minimum attendance policy for each student group
+        min_attendance_policy_subquery = subject_class_student_groups.annotate(
+            min_policy=Subquery(
+                SubjectClassStudentGroups.objects.filter(
+                    student_group_id=OuterRef('student_group_id')
+                ).order_by('attendance_policy').values('attendance_policy')[:1]
+            )
+        ).values('student_group_id', 'min_policy')
+
+        student_group_ids = subject_class_student_groups.values_list('student_group_id', flat=True)
+
+        students_with_attendance = Student.objects.filter(
+            studentgroupitem__student_group_id__in=student_group_ids
+        ).annotate(
+            prioritized_attendance_policy=Min(
+                Subquery(
+                    min_attendance_policy_subquery.filter(
+                        student_group_id=OuterRef('studentgroupitem__student_group_id')
+                    ).values('min_policy')
+                )
+            )
+        ).prefetch_related(
+            Prefetch('classattendance_set', queryset=ClassAttendance.objects.filter(subject=subject_class_instance), to_attr='attendance_obj')
         )
-        return all_students
+        
+        for student in students_with_attendance:
+            if student.attendance_obj:
+                student.attendance = student.attendance_obj[0]
+            else:
+                student.attendance = None
+
+        return students_with_attendance
 
     @classmethod
     def get_all_classes(cls, include_optional=False):

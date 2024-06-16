@@ -11,27 +11,23 @@ db_logger = logging.getLogger("db")
 
 
 class AddStudentsInputValidator(serializers.Serializer):
-    student_group_pk = serializers.IntegerField()
     email_list = serializers.ListField(child=serializers.EmailField())
 
 
 class StudentGroupView(views.APIView):
 
-    @csrf_exempt
-    def post(self, request):
+    def post(self, request, pk, *args, **kwargs):
         validator = AddStudentsInputValidator(data=request.data)
-        if validator.is_valid():
-            data = validator.validated_data
-            # Your processing logic here
-            # For example, you can log the validated data
-            db_logger.info(f"Validated data: {data}")
-            return Response({'status': 'success', 'data': data}, status=200)
-        else:
+        if not validator.is_valid():
             db_logger.error(f"Validation errors: {validator.errors}")
             return Response(validator.errors, status=400)
+        
+        group = get_object_or_404(StudentGroup, pk=pk)
+        data = validator.validated_data
+        
+        return Response({'status': 'success', 'data': data}, status=200)
 
-    def get(self, request, *args, **kwargs):
-        student_groups = StudentGroup.objects.all()
-        return render(request, "attendance/studentGroup.html", {"student_groups": student_groups})
+    def get(self, request, pk, *args, **kwargs):
+        group = get_object_or_404(StudentGroup, pk=pk)
 
-
+        return render(request, "attendance/studentGroup.html", {"name": group.name})

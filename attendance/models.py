@@ -1,5 +1,5 @@
 from django.core.cache import cache
-from django.db import models
+from django.db import IntegrityError, models
 from django.db.models import Count, F, Q, Min, Prefetch, OuterRef, Subquery
 from django.utils import timezone
 from enum import Enum
@@ -41,6 +41,10 @@ class Student(models.Model):
     @classmethod
     def can_mark_attendance(cls, request):
         return request.user.has_perm("attendance.can_mark_attendance")
+
+    @classmethod
+    def can_add_student_to_group(cls, request):
+        return request.user.has_perm("attendance.change_studentgroup")
 
     @classmethod
     def can_send_notifications(cls, request):
@@ -191,6 +195,44 @@ class StudentGroup(models.Model):
     def __str__(self):
         return self.name
 
+    def add_students_to_group(group, student_emails):
+        """
+        Add multiple students to a StudentGroup using their emails.
+        If a student is already part of the group, skip that student.
+        """
+        existing_emails = set(Student.objects.values_list("mail", flat=True))
+        valid_emails = set(student_emails) & existing_emails
+        invalid_emails = set(student_emails) - valid_emails
+        if invalid_emails:
+            return False, f"There are {len(invalid_emails)} invalid emails: " + (
+                ",".join(invalid_emails)
+            )
+
+        existing_students = set(
+            StudentGroupItem.objects.filter(student_group=group).values_list(
+                "student__mail", flat=True
+            )
+        )
+        students_to_add = Student.objects.filter(mail__in=valid_emails).exclude(
+            mail__in=existing_students
+        )
+        new_group_items = [
+            StudentGroupItem(student_group=group, student=student)
+            for student in students_to_add
+        ]
+
+        try:
+            StudentGroupItem.objects.bulk_create(new_group_items)
+        except IntegrityError:
+            return False, (
+                "One or more students could not be added due to an integrity error."
+            )
+
+        return (
+            True,
+            f"{len(students_to_add)} students added, {len(existing_students)} students already part of group",  # noqa: E501
+        )
+
 
 class StudentGroupItem(models.Model):
     student_group = models.ForeignKey(
@@ -220,11 +262,13 @@ class SubjectClass(models.Model):
     attendance_end_time = models.DateTimeField(blank=True, null=True)
     class_start_time = models.DateTimeField(db_index=True)
     class_end_time = models.DateTimeField()
-    is_attendance_mandatory = models.BooleanField(default=True)
+    is_attendance_mandatory = models.BooleanField(
+        default=True, help_text="dont use this field"
+    )
     subject = models.ForeignKey(
         Subject, default=None, null=True, blank=True, on_delete=models.CASCADE
     )
-    is_attendance_by_geo_location_enabled = models.BooleanField(default=True)
+    is_attendance_by_geo_location_enabled = models.BooleanField(default=False)
     merge_attendace_with_class = models.ForeignKey(
         "self", blank=True, null=True, on_delete=models.SET_DEFAULT, default=None
     )

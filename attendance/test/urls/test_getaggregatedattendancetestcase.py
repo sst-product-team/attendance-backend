@@ -42,7 +42,8 @@ class YourAppViewsTest(TestCase):
 
         # Check if the student with the incorrect token exists
         if not Student.objects.filter(token=data["token"]).exists():
-            print("Student with the specified token does not exist in the database.")
+            pass
+            # print("Student with the specified token does not exist in the database.")
         else:
             response = self.client.post(url, data, content_type="application/json")
             self.assertNotEqual(response.status_code, 200)

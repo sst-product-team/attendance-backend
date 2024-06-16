@@ -47,8 +47,8 @@
                 const responseElement = document.getElementById('response');
 
                 if (response.ok) {
-                    responseElement.textContent = responseBody.detail || 'No response from server';
-                    responseElement.className = 'success';
+                    responseElement.textContent = responseBody.data || 'No response from server';
+                    responseElement.className = responseBody.status;
                 } else {
                     let message = responseBody.message || responseBody.email_list["0"][0] || 'An error occurred while sending emails.';
                     responseElement.textContent = message;

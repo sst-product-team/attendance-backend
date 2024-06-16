@@ -279,6 +279,20 @@ class StudentGroupItemInline(admin.TabularInline):
 class StudentGroupAdmin(admin.ModelAdmin):
     inlines = [StudentGroupItemInline]
     search_fields = ["name"]
+    readonly_fields = ("add_bulk_candidates",)
+
+    def add_bulk_candidates(self, obj):
+        from django.utils.html import format_html
+
+        if obj.pk:
+            return format_html(
+                '<a class="button" target="_blank" href="{}">Add bulk students</a>',
+                reverse("student_group", args=[obj.pk]),
+            )
+        else:
+            return format_html(
+                '<a class="button" target="_blank" disabled>Add bulk students</a>'
+            )
 
 
 # admin.site.register(SubjectClassStudentGroups)

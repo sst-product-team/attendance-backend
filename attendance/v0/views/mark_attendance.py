@@ -55,6 +55,23 @@ url: {request.build_absolute_uri()}"""
         else:
             subject = subject.first()
 
+        all_emails = [s.mail for s in subject.get_all_students()]
+        all_emails = set(all_emails)
+
+        not_in_group = set()
+        for mailstatus in self.data:
+            if mailstatus["mail"] not in all_emails:
+                not_in_group.add(mailstatus["mail"])
+
+        if not_in_group:
+            return Response(
+                {
+                    "message": f"{len(not_in_group)} students are not in any group",
+                    "emails": not_in_group,
+                },
+                status=400,
+            )
+
         response = []
         for mailstatus in self.data:
             mail, status = mailstatus["mail"], mailstatus["status"]

@@ -1,0 +1,70 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Groups</title>
+    <style>
+        #response.success {
+            color: green;
+        }
+        #response.error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Student Groups: {{name}}</h1>
+    
+    <label for="email-list">Email Addresses:</label>
+    <textarea id="email-list" rows="5"></textarea>
+
+    <button onclick="sendEmails()">Submit</button>
+
+    <div id="response"></div>
+
+    <script>
+        async function sendEmails() {
+            const emailList = document.getElementById('email-list').value.split('\n').map(email => email.trim().toLowerCase());
+
+            const data = {
+                email_list: emailList
+            };
+
+            try {
+                const response = await fetch(window.location.href, {
+                    method: 'POST',
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": csrftoken,
+                        mode: "same-origin",
+                      },
+                    body: JSON.stringify(data)
+                });
+
+                const responseBody = await response.json();
+                const responseElement = document.getElementById('response');
+
+                if (response.ok) {
+                    responseElement.textContent = responseBody.data || 'No response from server';
+                    responseElement.className = responseBody.status;
+                } else {
+                    let message = responseBody.message || responseBody.email_list["0"][0] || 'An error occurred while sending emails.';
+                    responseElement.textContent = message;
+                    responseElement.className = 'error';
+                }
+            } catch (error) {
+                const responseElement = document.getElementById('response');
+                responseElement.textContent = 'An error occurred while sending emails.';
+                responseElement.className = 'error';
+            }
+        }
+    </script>
+
+    {% csrf_token %}
+    <script>
+      const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    </script>
+</body>
+</html>

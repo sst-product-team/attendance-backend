@@ -244,8 +244,6 @@ def fetchLatestAttendances(
     if not current_class:
         return JsonResponse(None, safe=False)
 
-    all_attendance = current_class.get_all_attendance()
-
     details = {}
     details["name"] = current_class.name
     details["class_start_time"] = current_class.class_start_time
@@ -253,32 +251,24 @@ def fetchLatestAttendances(
     details["attendance_start_time"] = current_class.attendance_start_time
     details["attendance_end_time"] = current_class.attendance_end_time
 
+    all_attendance = current_class.get_all_attendance()
     json_attendance = []
-    mail_set = set()
-    for attendance in all_attendance:
+
+    for student in all_attendance:
+        attendance = student.attendance
         json_attendance.append(
             {
-                "mail": attendance.student.mail,
-                "name": attendance.student.name,
-                "status": attendance.get_attendance_status().name,
+                "mail": student.mail,
+                "name": student.name,
+                "status": attendance.attendance_status.name
+                if attendance
+                else setForUnavailable,
             }
         )
-        mail_set.add(attendance.student.mail)
     response = {}
     response["current_class"] = details
     response["all_attendance"] = json_attendance
 
-    all_students = Student.get_all_students()
-
-    for student in all_students:
-        if student.mail not in mail_set:
-            json_attendance.append(
-                {
-                    "mail": student.mail,
-                    "name": student.name,
-                    "status": setForUnavailable,
-                }
-            )
     return response
 
 

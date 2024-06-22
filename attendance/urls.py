@@ -13,6 +13,11 @@ urlpatterns = [
     path("register/", views.register, name="register"),
     path("injest_to_scaler/<int:pk>/", views.injest_to_scaler, name="injest_to_scaler"),
     path(
+        "student_group/<int:pk>/",
+        v0_view.StudentGroupView.as_view(),
+        name="student_group",
+    ),
+    path(
         "injest_to_backend/<int:pk>/",
         v0_view.mark_attendance.BulkMarkAttendanceByBSMView.as_view(),
         name="injest_to_backend",

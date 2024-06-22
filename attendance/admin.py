@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import reverse
 from attendance.models import (
     Student,
+    StudentGroup,
+    StudentGroupItem,
     Subject,
     SubjectClass,
     ClassAttendance,
@@ -11,6 +13,7 @@ from attendance.models import (
     FalseAttemptGeoLocation,
     ClassAttendanceByBSM,
     ProblemSolvingPercentage,
+    SubjectClassStudentGroups,
 )
 from django.utils.html import format_html
 
@@ -158,7 +161,13 @@ class StudentAdmin(admin.ModelAdmin):
     send_notification.short_description = "Send Reminder"
 
 
+class SubjectClassStudentGroupsInline(admin.TabularInline):
+    model = SubjectClassStudentGroups
+    autocomplete_fields = ["student_group"]
+
+
 class SubjectClassAdmin(admin.ModelAdmin):
+    inlines = [SubjectClassStudentGroupsInline]
     list_display = (
         "__str__",
         "subject",
@@ -262,6 +271,32 @@ class SubjectClassAdmin(admin.ModelAdmin):
             )
 
 
+class StudentGroupItemInline(admin.TabularInline):
+    model = StudentGroupItem
+    autocomplete_fields = ["student"]
+
+
+class StudentGroupAdmin(admin.ModelAdmin):
+    inlines = [StudentGroupItemInline]
+    search_fields = ["name"]
+    readonly_fields = ("add_bulk_candidates",)
+
+    def add_bulk_candidates(self, obj):
+        from django.utils.html import format_html
+
+        if obj.pk:
+            return format_html(
+                '<a class="button" target="_blank" href="{}">Add bulk students</a>',
+                reverse("student_group", args=[obj.pk]),
+            )
+        else:
+            return format_html(
+                '<a class="button" target="_blank" disabled>Add bulk students</a>'
+            )
+
+
+# admin.site.register(SubjectClassStudentGroups)
+admin.site.register(StudentGroup, StudentGroupAdmin)
 admin.site.register(ProblemSolvingPercentage, ProblemSolvingPercentageAdmin)
 admin.site.register(ClassAttendanceByBSM, ClassAttendanceByBSMAdmin)
 admin.site.register(Student, StudentAdmin)

@@ -27,6 +27,7 @@ class EndToEndTest(TestCase):
             class_start_time=(start_time),
             class_end_time=(end_time),
             subject=self.coursesubject,
+            is_attendance_by_geo_location_enabled=True,
         )
         self.project_config = ProjectConfiguration.get_config()
         self.project_config.INJEST_ATTENDANCE_IN_REAL_TIME = True
@@ -101,7 +102,7 @@ class EndToEndTest(TestCase):
         )
 
         response = self.mark_attendance()
-        self.assertEquals(response.status_code, 200, "Mark attendance failed")
+        self.assertEquals(200, response.status_code, "Mark attendance failed")
 
         response, content = self.fetch_attendance()
         self.assertEqual(

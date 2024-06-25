@@ -369,23 +369,6 @@ class SubjectClass(models.Model):
         self.super_batch_id = int(self.scaler_class_url.split("/")[5])
         self.class_topic_slug = self.scaler_class_url.split("/")[7]
 
-    def get_all_students_attendance_status(self):
-        allClassAttendance = self.get_all_attendance()
-
-        json_attendance = []
-        mail_set = set()
-        for attendance in allClassAttendance:
-            json_attendance.append((attendance.student, attendance.attendance_status))
-            mail_set.add(attendance.student.mail)
-
-        all_students = Student.get_all_students()
-
-        for student in all_students:
-            if student.mail not in mail_set:
-                json_attendance.append((student, AttendanceStatus.Absent))
-
-        return json_attendance
-
     @classmethod
     def get_current_class(cls):
         cache_key = "get_current_class"

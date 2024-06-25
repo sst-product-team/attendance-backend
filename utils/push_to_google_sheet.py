@@ -66,11 +66,11 @@ def get_col_for_subject_class(sheet, subject_class):
 
 
 def get_attendance_mapping(mails, subject_class):
-    attendances = subject_class.get_all_attendance()
+    students = subject_class.get_all_attendance()
     status_map = {}
-    for att in attendances:
-        status_map[att.student.mail] = (
-            1 if AttendanceStatus.Present == att.attendance_status else 0
+    for student in students:
+        status_map[student.mail] = (
+            1 if student.attendance and (AttendanceStatus.Present == student.attendance.attendance_status) else 0
         )
 
     return_status = []

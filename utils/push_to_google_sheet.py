@@ -70,9 +70,10 @@ def get_attendance_mapping(mails, subject_class):
     status_map = {}
     for student in students:
         status_map[student.mail] = (
-            1 if student.attendance and (
-                AttendanceStatus.Present == student.attendance.attendance_status
-            ) else 0
+            1
+            if student.attendance
+            and (AttendanceStatus.Present == student.attendance.attendance_status)
+            else 0
         )
 
     return_status = []

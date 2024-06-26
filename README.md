@@ -28,12 +28,8 @@ For sure you will get some errors after running above step fix those and then co
 python manage.py makemigrations
 python manage.py makemigrations attendance
 python manage.py migrate
+python manage.py loaddata ./fixtures_dev_db.json
 python manage.py runserver
-```
-
-After that you can load dummy data. Run below command in a different shell.
-```bash
-python manage.py loaddata ./fixture.json
 ```
 
 After loading fixtures you can use following credencials to loggin

@@ -251,10 +251,10 @@ def fetchLatestAttendances(
     details["attendance_start_time"] = current_class.attendance_start_time
     details["attendance_end_time"] = current_class.attendance_end_time
 
-    all_attendance = current_class.get_all_attendance()
+    students = current_class.get_all_attendance()
     json_attendance = []
 
-    for student in all_attendance:
+    for student in students:
         attendance = student.attendance
         json_attendance.append(
             {

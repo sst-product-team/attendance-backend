@@ -12,7 +12,22 @@ Students attendance report  [page](https://attendancebackend-v9zk.onrender.com/a
 
 ## Code contribution
 
-## Setup
+## Setup Frontend
+
+install node v20.15.0
+
+install yarn v1.22.22
+
+run below command to integrate frontend with backend
+
+```bash
+sh build_frontend.sh
+```
+
+frontend repository will get cloned at `attendance-web-client/`
+
+
+## Setup Backend
 
 ### Using python.
 

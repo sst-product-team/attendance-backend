@@ -5,6 +5,9 @@ REPO_URL="https://github.com/sst-product-team/attendance-web-client.git"
 DIR_NAME="attendance-web-client"
 STATIC_ATTENDANCE_DIR="static/attendance"
 
+# Convert DEBUG to lowercase for case-insensitive comparison
+DEBUG_LOWER=$(echo "$DEBUG" | tr '[:upper:]' '[:lower:]')
+
 # Check if the repository directory exists
 if [ -d "$DIR_NAME" ]; then
     echo "Directory $DIR_NAME already exists. Skipping git clone."
@@ -50,4 +53,7 @@ sed -i "s/index\.[a-f0-9]\+\.js/$new_index/g" "$target_file"
 
 echo "File names updated successfully."
 
-rm -rf ./$DIR_NAME
+if [ "$DEBUG_LOWER" = "false" ]; then
+    rm -rf ./$DIR_NAME
+    echo "Directory $STATIC_ATTENDANCE_DIR cleaned."
+fi

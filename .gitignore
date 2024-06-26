@@ -5,3 +5,8 @@ venv
 env
 .env
 .attendance-backend
+
+# build
+attendance-web-client/
+static/attendance/
+staticfiles/
